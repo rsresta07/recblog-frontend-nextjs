@@ -8,6 +8,7 @@ import { MantineProvider } from "@mantine/core";
 import { Notifications } from "@mantine/notifications";
 import { theme } from "@/utils/theme";
 import Head from "next/head";
+import { useEffect } from "react";
 
 type CustomAppProps = AppProps & {
   Component: {
@@ -31,12 +32,16 @@ type CustomAppProps = AppProps & {
 export default function App({ Component, pageProps }: CustomAppProps) {
   const getLayout = Component.getLayout ?? ((page: React.ReactElement) => page);
 
+  useEffect(() => {
+    document.documentElement.classList.add("dark"); // force dark mode
+  }, []);
+
   return (
     <>
       <Head>
         <link rel="icon" href="/globe.svg" />
       </Head>
-      <MantineProvider theme={theme} defaultColorScheme="light">
+      <MantineProvider theme={theme} defaultColorScheme="dark">
         <Notifications />
         {getLayout(<Component {...pageProps} />)}
       </MantineProvider>
