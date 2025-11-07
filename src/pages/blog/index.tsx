@@ -2,11 +2,6 @@ import ExplorePage from "@/components/modules/ExplorePage";
 import HeroLayout from "@/layouts/HeroLayout";
 import Head from "next/head";
 
-/**
- * A component that renders the blog page using the ExplorePage component.
- *
- * @returns The rendered blog page wrapped in the ExplorePage component.
- */
 const Blog = () => {
   return (
     <>

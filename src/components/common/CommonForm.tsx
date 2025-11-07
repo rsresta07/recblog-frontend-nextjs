@@ -37,6 +37,11 @@ const CommonForm = ({
         type={field.type || "text"}
         autoComplete={field.autoComplete ?? "off"}
         withAsterisk
+        classNames={{
+          input:
+            "bg-background text-foreground border border-border placeholder:text-muted-foreground",
+          label: "text-primary",
+        }}
         error={
           typeof errors[field.name]?.message === "string" && (
             <Text color="red">{errors[field.name]?.message as string}</Text>
@@ -55,19 +60,22 @@ const CommonForm = ({
       >
         <div className="space-y-4">{fields.map(renderInput)}</div>
 
-        <Button type="submit" fullWidth color="primary-color">
+        <button
+          type="submit"
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 p-2 rounded-md"
+        >
           {buttonText}
-        </Button>
+        </button>
 
         {footerLinkLabel && (
-          <Text size="sm">
+          <Text size="sm" className="text-foreground">
             {footerLinkText}{" "}
             <Anchor
               component="button"
               onClick={footerLinkAction}
-              className="cursor-pointer"
+              className="cursor-pointer text-secondary hover:underline"
             >
-              <span className="text-secondary">{footerLinkLabel}</span>
+              {footerLinkLabel}
             </Anchor>
           </Text>
         )}
