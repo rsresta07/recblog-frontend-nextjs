@@ -10,6 +10,7 @@ import { ApiGetTag } from "@/api/tag";
 import CustomSunEditor from "@/components/common/CommonSunEditor";
 import CommonImageUpload from "@/components/common/CommonImageUpload";
 import Link from "next/link";
+import CustomEditor from "@/components/common/CommonSunEditor";
 
 type FormValues = {
   title: string;
@@ -18,17 +19,6 @@ type FormValues = {
   image: File | null;
 };
 
-/**
- * A Next.js page component that renders a form to add a new blog post.
- *
- * The form consists of the following fields: title, content, tags, and featured
- * image. When the form is submitted, it sends a request to the API to create a
- * new blog post. If the request is successful, it navigates to the user's
- * profile page. If the request fails, it shows a notification with an error
- * message.
- *
- * @returns A JSX component that renders a form to add a new blog post.
- */
 const AddPost = () => {
   const {
     register,
@@ -38,12 +28,7 @@ const AddPost = () => {
     setValue,
     formState: { errors },
   } = useForm<FormValues>({
-    defaultValues: {
-      title: "",
-      content: "",
-      tagIds: [],
-      image: null,
-    },
+    defaultValues: { title: "", content: "", tagIds: [], image: null },
   });
 
   const router = useRouter();
@@ -53,7 +38,6 @@ const AddPost = () => {
   const [tagData, setTagData] = useState<any[]>([]);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
 
-  /* ───────────── fetch tags ───────────── */
   useEffect(() => {
     (async () => {
       try {
@@ -67,37 +51,21 @@ const AddPost = () => {
 
   const tagOptions = tagData.map((t) => ({ value: t.id, label: t.title }));
 
-  /**
-   * Handles the submission of the add post form.
-   *
-   * This function constructs a payload with the new post details and sends
-   * a request to add the post via the API. If the post is added successfully,
-   * it shows a success notification and navigates to the user profile page.
-   * If the post addition fails, it shows an error notification.
-   *
-   * @param {FormValues} data - The form data containing the post details.
-   */
   const onSubmit = async (data: FormValues) => {
-    if (!uploadedImageUrl) {
+    if (!uploadedImageUrl)
       return showNotify("error", "Please select and upload an image.");
-    }
-
     setLoading(true);
     try {
       const payload = {
         title: data.title,
         description: data.content,
-        image: uploadedImageUrl, // Use the uploaded image URL
+        image: uploadedImageUrl,
         tagIds: data.tagIds,
       };
-
       const resp = await APIAddBlog(slug, payload);
       showNotify("success", resp?.message || "Post added successfully!");
-
-      // Reset form and state
       reset();
       setUploadedImageUrl(null);
-
       router.push(`/user/${slug}`);
     } catch (e: any) {
       console.error(e);
@@ -107,37 +75,58 @@ const AddPost = () => {
     }
   };
 
-  /**
-   * Handles the change of the image upload input by updating the component state
-   * and notifying the parent component of the image change.
-   *
-   * @param {string | null} imageUrl - The URL of the uploaded image or null if the image is removed.
-   *
-   * This function updates the component state with the new image URL and notifies the parent
-   * component by calling the `setValue` function from `react-hook-form` to update the form
-   * value for validation.
-   */
   const handleImageChange = (imageUrl: string | null) => {
     setUploadedImageUrl(imageUrl);
-    // Update the form value for validation
     setValue("image", imageUrl as any);
   };
 
-  /* Render UI  */
   return (
-    <main className="pt-5 p-[5rem] bg-light-bg">
+    <main className="pt-5 p-[5rem] bg-background">
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Top bar */}
         <section className="flex justify-between items-center mb-8">
           <div className="flex gap-6 items-end">
             <CommonLogo />
-            <Text>Draft</Text>
+            <Text className="text-foreground">Draft</Text>
           </div>
           <div className="flex gap-6 items-center">
-            <Button type="submit" radius="xl" color="dark" loading={loading}>
-              Publish
-            </Button>
-            <Link href={`/user/${slug}`}>Profile</Link>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`px-4 py-2 rounded text-primary-foreground bg-primary hover:bg-accent transition flex items-center gap-2 ${
+                loading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
+            >
+              {loading && (
+                <svg
+                  className="animate-spin h-4 w-4 text-primary-foreground"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+              )}
+              {loading ? "Publishing..." : "Publish"}
+            </button>
+            <Link
+              href={`/user/${slug}`}
+              className="text-primary hover:text-accent transition-colors"
+            >
+              Profile
+            </Link>
           </div>
         </section>
 
@@ -157,6 +146,11 @@ const AddPost = () => {
                   "Title must start with a letter or number and can only contain letters, numbers, spaces, -, :, ;, ', \"",
               })}
               error={errors.title?.message?.toString()}
+              classNames={{
+                input:
+                  "bg-card text-foreground border border-border placeholder:text-muted-foreground",
+                label: "text-primary",
+              }}
             />
 
             <Controller
@@ -174,6 +168,11 @@ const AddPost = () => {
                   withAsterisk
                   {...field}
                   error={errors.tagIds?.message?.toString()}
+                  classNames={{
+                    input:
+                      "bg-card text-foreground border border-border placeholder:text-muted-foreground",
+                    label: "text-primary",
+                  }}
                 />
               )}
             />
@@ -185,23 +184,23 @@ const AddPost = () => {
             label="Content"
             withAsterisk
             error={errors.content?.message?.toString()}
+            className="text-primary"
           >
             <Controller
               name="content"
               control={control}
               rules={{ required: "Content is required" }}
               render={({ field }) => (
-                <CustomSunEditor
+                <CustomEditor
                   value={field.value}
                   onChange={field.onChange}
                   error={errors.content?.message}
-                  // features={["image", "video"]}
                 />
               )}
             />
           </Input.Wrapper>
 
-          {/* Featured image with cropping */}
+          {/* Featured image */}
           <div className="w-[25rem]">
             <CommonImageUpload
               control={control}

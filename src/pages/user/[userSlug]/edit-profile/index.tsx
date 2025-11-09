@@ -25,16 +25,6 @@ const defaultValues: FormValues = {
   position: "",
 };
 
-/**
- * A Next.js page component that renders a form to edit a user's profile.
- *
- * Fetches the current user data on mount and populates the form with the
- * existing data. Handles form validation and submission. On successful
- * submission, it navigates to the user's profile page. If the submission fails,
- * it shows an error notification.
- *
- * @returns A JSX element with a form to edit the user's profile.
- */
 const EditProfile = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -44,7 +34,6 @@ const EditProfile = () => {
     defaultValues,
   });
 
-  // Fetch current user data on mount
   useEffect(() => {
     (async () => {
       try {
@@ -66,24 +55,12 @@ const EditProfile = () => {
     })();
   }, []);
 
-  /**
-   * Handles the submission of the edit profile form.
-   *
-   * Sends a request to update the user's profile with the provided form data.
-   * If the update is successful, it shows a success notification and navigates
-   * to the user's profile page. If the update fails, it shows an error
-   * notification.
-   *
-   * @param {FormValues} values - The form data to update the user's profile with.
-   */
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
     try {
       await ApiUpdateMe(values);
       showNotify("success", "Profile updated");
       const newData = await ApiGetMe();
-      console.log(newData);
-      // Replace with the correct username once returned from API
       router.push(`/user/${newData?.data?.username}`);
     } catch (error: any) {
       showNotify("error", error?.response?.data?.message || "Update failed");
@@ -92,31 +69,43 @@ const EditProfile = () => {
     }
   };
 
-  // Loading indicator while fetching
   if (loading) {
     return (
       <Group mt="xl">
-        <Loader />
+        <Loader color="var(--foreground)" />
       </Group>
     );
   }
 
-  // Render form
   return (
-    <section className="bg-light-bg pt-12 p-[12rem] pb-[15rem]">
-      <Title order={3} mb="md">
+    <section
+      className="pt-12 p-[12rem] pb-[15rem]"
+      style={{
+        backgroundColor: "var(--background)",
+        color: "var(--foreground)",
+      }}
+    >
+      <Title order={3} mb="md" style={{ color: "var(--foreground)" }}>
         Edit Profile
       </Title>
 
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="bg-light-bg flex flex-col gap-4"
+        className="flex flex-col gap-4"
       >
         <TextInput
           label="Full Name"
           placeholder="John Doe"
           {...form.register("fullName")}
           error={form.formState.errors.fullName?.message}
+          styles={{
+            input: {
+              backgroundColor: "var(--card)",
+              color: "var(--card-foreground)",
+              borderColor: "var(--border)",
+            },
+            label: { color: "var(--foreground)" },
+          }}
         />
 
         <TextInput
@@ -124,6 +113,14 @@ const EditProfile = () => {
           placeholder="Edit your username"
           {...form.register("username")}
           error={form.formState.errors.username?.message}
+          styles={{
+            input: {
+              backgroundColor: "var(--card)",
+              color: "var(--card-foreground)",
+              borderColor: "var(--border)",
+            },
+            label: { color: "var(--foreground)" },
+          }}
         />
 
         <TextInput
@@ -131,6 +128,14 @@ const EditProfile = () => {
           placeholder="Web Developer"
           {...form.register("position")}
           error={form.formState.errors.position?.message}
+          styles={{
+            input: {
+              backgroundColor: "var(--card)",
+              color: "var(--card-foreground)",
+              borderColor: "var(--border)",
+            },
+            label: { color: "var(--foreground)" },
+          }}
         />
 
         <TextInput
@@ -138,6 +143,14 @@ const EditProfile = () => {
           placeholder="Email"
           {...form.register("email")}
           error={form.formState.errors.email?.message}
+          styles={{
+            input: {
+              backgroundColor: "var(--card)",
+              color: "var(--card-foreground)",
+              borderColor: "var(--border)",
+            },
+            label: { color: "var(--foreground)" },
+          }}
         />
 
         <div className="flex gap-4">
@@ -145,8 +158,20 @@ const EditProfile = () => {
             label="Cancel"
             onClick={() => router.back()}
             variant="light"
+            // style={{
+            //   backgroundColor: "var(--card)",
+            //   color: "var(--card-foreground)",
+            // }}
           />
-          <CommonButton label="Save Changes" type="submit" variant="light" />
+          <CommonButton
+            label="Save Changes"
+            type="submit"
+            variant="light"
+            // style={{
+            //   backgroundColor: "var(--primary)",
+            //   color: "var(--primary-foreground)",
+            // }}
+          />
         </div>
       </form>
     </section>

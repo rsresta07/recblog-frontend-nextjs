@@ -1,9 +1,6 @@
 import { APIGetRawRecommendedPosts } from "@/api/recommendation";
 import BlogPostGrid from "../common/CommonBlogPostGrid";
 
-// Display Cards of the Blog
-// TODO: Make the links work
-
 /**
  * A component that displays a grid of blog posts recommended based on similarity.
  *

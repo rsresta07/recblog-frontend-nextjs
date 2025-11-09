@@ -10,12 +10,11 @@ const CommonBlogList = ({ post, loading }: any) => {
   const cleanHtml = sanitizeHtml(post.content, {
     allowedTags: sanitizeHtml.defaults.allowedTags,
     allowedAttributes: {
-      "*": ["href", "src", "alt"], // allow minimal useful stuff
+      "*": ["href", "src", "alt"],
     },
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
       "*": (tagName, attribs) => {
-        // strip style attributes completely
         delete attribs.style;
         return { tagName, attribs };
       },
@@ -24,7 +23,7 @@ const CommonBlogList = ({ post, loading }: any) => {
 
   return (
     <div
-      className="w-full h-full bg-light-bg p-4 rounded-lg flex flex-col overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+      className="w-full h-full bg-card p-4 rounded-lg flex flex-col overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
       key={post?.id}
     >
       <div className="overflow-hidden rounded-lg flex-shrink-0 mb-4">
@@ -39,41 +38,43 @@ const CommonBlogList = ({ post, loading }: any) => {
         </Link>
       </div>
       <div>
-        <span className={`text-btn-text text-sm text-primary`}>
+        <span className="text-sm text-primary mb-1 block">
           {post?.user && (
-            <Link href={`/user/${post?.user?.slug}`}>
+            <Link
+              href={`/user/${post?.user?.slug}`}
+              className="hover:text-accent"
+            >
               {post?.user?.fullName}
             </Link>
           )}
         </span>
         <Link href={`/blog/${post?.slug}`}>
-          <h3 className={`text-lg line-clamp-1 text-primary font-bold`}>
+          <h3 className="text-lg line-clamp-1 text-primary font-bold hover:text-accent">
             {post?.title}
           </h3>
           <div
             dangerouslySetInnerHTML={{ __html: cleanHtml }}
-            className="mb-4 text-[#1e1e1e] text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-2"
+            className="mb-4 text-foreground text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-2"
           />
           {post?.tags?.map((tag: any) => (
             <span
               key={tag?.id}
-              className="text-sm px-2 bg-secondary rounded-lg text-[#fdfdfd] m-1"
+              className="text-sm px-2 bg-primary rounded-lg text-primary-foreground m-1"
             >
               {tag?.title}
             </span>
           ))}
-          <div className="mt-6 text-sm text-muted-foreground flex items-center justify-end space-x-[1.5rem] text-primary">
-            <div className={`flex items-center gap-2 text-sm`}>
-              <IconEye /> {post?.viewCount || 0}
+          <div className="mt-6 text-sm flex items-center justify-end space-x-6 text-foreground">
+            <div className="flex items-center gap-2 text-sm">
+              <IconEye className="text-muted-foreground" />{" "}
+              {post?.viewCount || 0}
             </div>
             <div className="flex items-center gap-2">
-              <div className={`text-heart-red`}>
-                <IconHeart />
-              </div>
-              {post?.likeCount || 0}
+              <IconHeart className="text-heart-red" /> {post?.likeCount || 0}
             </div>
-            <div className={`flex items-center gap-2`}>
-              <IconMessage /> {post?.commentCount || 0}
+            <div className="flex items-center gap-2">
+              <IconMessage className="text-muted-foreground" />{" "}
+              {post?.commentCount || 0}
             </div>
           </div>
         </Link>

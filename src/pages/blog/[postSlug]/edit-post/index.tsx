@@ -1,3 +1,5 @@
+// TODO: left to do
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useForm, Controller } from "react-hook-form";
@@ -68,7 +70,7 @@ const EditPost = () => {
         const { data: tags } = await ApiGetTag();
 
         setTagOptions(
-          tags.map((t: any) => ({ value: t?.id, label: t?.title })),
+          tags.map((t: any) => ({ value: t?.id, label: t?.title }))
         );
 
         setPostId(post?.id);
@@ -123,7 +125,7 @@ const EditPost = () => {
       } else {
         router.push(`/blog/${slug}`);
         console.warn(
-          "Author slug not found, navigating to post details instead of user profile.",
+          "Author slug not found, navigating to post details instead of user profile."
         );
       }
     } catch (err) {
@@ -213,7 +215,12 @@ const EditPost = () => {
           />
 
           <Group>
-            <Button type="submit">Update Post</Button>
+            <button
+              type="submit"
+              className="text-foreground bg-primary px-4 py-2 rounded"
+            >
+              Update Post
+            </button>
           </Group>
         </Stack>
       </form>

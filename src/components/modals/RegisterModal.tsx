@@ -1,18 +1,17 @@
-import { Button, Modal } from "@mantine/core";
+import { Modal } from "@mantine/core";
 import { useState } from "react";
 import CommonForm from "../common/CommonForm";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/router";
 import { SubmitHandler } from "react-hook-form";
-import { setCookie } from "cookies-next";
+import { useRouter } from "next/router";
 import { ApiRegister } from "@/api/auth";
 import showNotify from "@/utils/notify";
 import { useAuth } from "@/utils/hooks/useAuth";
 import LoginModal from "./LoginModal";
 import PasswordInputWithStrength from "../common/PasswordInputWithStrength";
 
-// Validation Schema
+// Validation schema
 const schema = z
   .object({
     fullName: z
@@ -25,7 +24,6 @@ const schema = z
       .refine((val) => !/^\d/.test(val), {
         message: "Email should not start with a number",
       }),
-
     password: z
       .string()
       .min(6, "Password must be at least 6 characters")
@@ -39,32 +37,14 @@ const schema = z
     path: ["confirmPassword"],
   });
 
-// Form Type
 interface RegisterForm extends z.infer<typeof schema> {}
 
-/**
- * A modal component for user registration.
- *
- * Props:
- * - openLoginModal: A function to open the login modal.
- *
- * Features:
- * - Provides a form for user registration with full name, email, password, and expertise fields.
- * - Validates user input using zod schema.
- * - Submits the registration form and handles authentication.
- * - Redirects users to their respective dashboard based on their role after successful login.
- * - Displays error notifications on authentication failure.
- * - Integrates with router events to manage modal transitions.
- *
- * @returns A JSX element with a modal and a button to open the modal.
- */
 const RegisterModal = ({ openLoginModal }: { openLoginModal: () => void }) => {
-  const [noTransitionOpened, setNoTransitionOpened] = useState(false);
-  const router = useRouter();
-  const { refreshUser } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const { refreshUser } = useAuth();
+  const router = useRouter();
 
-  // Input Fields
   const fields = [
     {
       name: "fullName",
@@ -72,11 +52,7 @@ const RegisterModal = ({ openLoginModal }: { openLoginModal: () => void }) => {
       placeholder: "Enter your full name",
       autoComplete: "off",
     },
-    {
-      name: "email",
-      label: "Email",
-      placeholder: "your@email.com",
-    },
+    { name: "email", label: "Email", placeholder: "your@email.com" },
     {
       name: "position",
       label: "Expertise",
@@ -84,15 +60,6 @@ const RegisterModal = ({ openLoginModal }: { openLoginModal: () => void }) => {
     },
     {
       name: "password",
-      /**
-       * Renders a PasswordInputWithStrength component for the password field.
-       *
-       * This component displays a popover with password strength requirements.
-       * The strength of the password is shown as a progress bar.
-       * The requirements are displayed below the progress bar.
-       *
-       * @returns A JSX element representing the password input field.
-       */
       render: () => (
         <PasswordInputWithStrength
           name="password"
@@ -110,21 +77,6 @@ const RegisterModal = ({ openLoginModal }: { openLoginModal: () => void }) => {
     },
   ];
 
-  /**
-   * Handles the submission of the registration form.
-   *
-   * Constructs a payload from the form data and sends a registration request
-   * to the API. On success, notifies the user and transitions to the login
-   * modal. On error, displays an appropriate notification message based on
-   * the error code. If the account already exists, it prompts the user to
-   * log in.
-   *
-   * @param formData - The data submitted from the registration form.
-   *
-   * @async
-   * @function handleSubmit
-   */
-
   const handleSubmit: SubmitHandler<RegisterForm> = async (formData) => {
     try {
       const payload = {
@@ -140,8 +92,8 @@ const RegisterModal = ({ openLoginModal }: { openLoginModal: () => void }) => {
 
       if (res?.data?.id) {
         showNotify("success", "Registration successful. Please log in.");
-        setNoTransitionOpened(false); // close register
-        setShowLogin(true); // open login modal
+        setIsOpen(false);
+        setShowLogin(true);
       } else {
         showNotify("fail", "Something went wrong. Please try again.");
       }
@@ -161,15 +113,17 @@ const RegisterModal = ({ openLoginModal }: { openLoginModal: () => void }) => {
   return (
     <>
       <Modal
-        opened={noTransitionOpened}
-        onClose={() => setNoTransitionOpened(false)}
-        title="Sign Up Now"
+        opened={isOpen}
+        onClose={() => setIsOpen(false)}
+        title={
+          <span className="text-primary font-bold text-xl">Sign Up Now</span>
+        }
         centered
         size="lg"
         transitionProps={{
           transition: "fade",
-          duration: 600,
-          timingFunction: "linear",
+          duration: 400,
+          timingFunction: "ease",
         }}
       >
         <CommonForm
@@ -177,32 +131,28 @@ const RegisterModal = ({ openLoginModal }: { openLoginModal: () => void }) => {
           onSubmit={handleSubmit}
           validationSchema={zodResolver(schema)}
           buttonText="Register"
-          showCheckbox={true}
+          showCheckbox
           footerLinkText="Already have an account?"
           footerLinkLabel="Login"
           footerLinkAction={() => {
-            setNoTransitionOpened(false);
+            setIsOpen(false);
             setShowLogin(true);
           }}
-          twoColumnLayout={true}
+          twoColumnLayout
         />
       </Modal>
 
-      <Button
-        variant="transparent"
-        color="black"
-        size="compact-xl"
-        onClick={() => setNoTransitionOpened(true)}
+      <button
+        onClick={() => setIsOpen(true)}
+        className="text-md font-normal text-primary hover:underline decoration-secondary decoration-4 underline-offset-4 transition-all duration-300"
       >
-        <label className="text-lg font-normal text-primary hover:underline decoration-secondary decoration-4 underline-offset-4 transition-all duration-300">
-          Sign Up
-        </label>
-      </Button>
+        Sign Up
+      </button>
 
       <LoginModal
         triggerOpen={showLogin}
         setTriggerOpen={setShowLogin}
-        openRegisterModal={() => setNoTransitionOpened(true)}
+        openRegisterModal={() => setIsOpen(true)}
       />
     </>
   );

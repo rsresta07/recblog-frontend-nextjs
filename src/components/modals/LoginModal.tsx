@@ -48,7 +48,6 @@ const LoginModal = ({
   triggerOpen?: boolean;
   setTriggerOpen?: (val: boolean) => void;
 }) => {
-  const [noTransitionOpened, setNoTransitionOpened] = useState(false);
   const router = useRouter();
 
   const fields = [
@@ -61,97 +60,55 @@ const LoginModal = ({
     },
   ];
 
-  /**
-   * Handles the login form submission.
-   * @param data - The form data containing the user's email and password.
-   * @returns A promise that resolves if the login is successful and rejects otherwise.
-   *
-   * On success, this function:
-   * - Sets the token and user cookies.
-   * - Redirects the user to their respective dashboard based on their role.
-   * On failure, this function displays an error notification with the message "Wrong credentials".
-   */
   const handleSubmit: SubmitHandler<LoginForm> = async (data) => {
     try {
       const res = await ApiLogin(data);
 
       if (res?.data?.id) {
         const user = {
-          id: res?.data?.id,
-          email: res?.data?.email,
-          slug: res?.data?.slug,
-          role: res?.data?.role,
+          id: res.data.id,
+          email: res.data.email,
+          slug: res.data.slug,
+          role: res.data.role,
         };
 
-        setCookie("token", res?.data?.token);
+        setCookie("token", res.data.token);
         setCookie("user", JSON.stringify(user));
 
-        // Redirect based on role
-        if (user?.role === "SUPER_ADMIN") {
-          window.location.href = "/dashboard";
-        } else if (user?.role === "USER") {
-          window.location.href = `/`;
-        } else {
-          console.log("Unknown role");
-        }
+        if (user.role === "SUPER_ADMIN") window.location.href = "/dashboard";
+        else window.location.href = "/";
       } else {
         showNotify("error", "Wrong credentials");
       }
-    } catch (error) {
+    } catch {
       showNotify("error", "Wrong credentials");
     }
   };
 
-  useEffect(() => {
-    const handleRouteStart = () => setNoTransitionOpened(false);
-    router.events.on("routeChangeStart", handleRouteStart);
-    return () => router.events.off("routeChangeStart", handleRouteStart);
-  }, [router.events]);
-
-  useEffect(() => {
-    if (triggerOpen !== undefined) {
-      setNoTransitionOpened(triggerOpen);
-    }
-  }, [triggerOpen]);
-
-  /**
-   * Closes the login modal.
-   * If the component is controlled (i.e. setTriggerOpen is a function), it also sets the triggerOpen state to false.
-   */
-  const closeModal = () => {
-    setNoTransitionOpened(false);
-    if (setTriggerOpen) setTriggerOpen(false);
-  };
-
   return (
-    <>
-      <Modal
-        opened={noTransitionOpened}
-        onClose={() => setNoTransitionOpened(false)}
-        title="Sign In"
-        centered
-        transitionProps={{
-          transition: "fade",
-          duration: 600,
-          timingFunction: "linear",
-        }}
-      >
-        <CommonForm
-          fields={fields}
-          onSubmit={handleSubmit}
-          validationSchema={zodResolver(schema)}
-          buttonText="Sign In"
-          showCheckbox={false}
-          footerLinkText="Don't have an account?"
-          footerLinkLabel="Sign Up"
-          footerLinkAction={() => {
-            setNoTransitionOpened(false);
-            openRegisterModal();
-          }}
-          twoColumnLayout={false}
-        />
-      </Modal>
-    </>
+    <Modal
+      opened={triggerOpen ?? false}
+      onClose={() => setTriggerOpen?.(false)}
+      title="Sign In"
+      centered
+      transitionProps={{
+        transition: "fade",
+        duration: 600,
+        timingFunction: "linear",
+      }}
+    >
+      <CommonForm
+        fields={fields}
+        onSubmit={handleSubmit}
+        validationSchema={zodResolver(schema)}
+        buttonText="Sign In"
+        showCheckbox={false}
+        footerLinkText="Don't have an account?"
+        footerLinkLabel="Sign Up"
+        footerLinkAction={() => setTriggerOpen?.(false) || openRegisterModal()}
+        twoColumnLayout={false}
+      />
+    </Modal>
   );
 };
 

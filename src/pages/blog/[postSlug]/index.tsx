@@ -42,25 +42,25 @@ import Head from "next/head";
 
 const PostSkeleton = () => (
   <section className="col-span-8 flex flex-col gap-4 animate-pulse">
-    <div className="h-8 bg-gray-300 rounded w-3/4" />
-    <div className="h-4 bg-gray-200 rounded w-1/2" />
-    <div className="h-64 bg-gray-300 rounded" />
-    <div className="h-4 bg-gray-200 rounded w-full" />
-    <div className="h-4 bg-gray-200 rounded w-5/6" />
-    <div className="h-4 bg-gray-200 rounded w-3/4" />
-    <div className="h-4 bg-gray-200 rounded w-2/4" />
+    <div className="h-8 bg-slate-300 rounded w-3/4" />
+    <div className="h-4 bg-slate-200 rounded w-1/2" />
+    <div className="h-64 bg-slate-300 rounded" />
+    <div className="h-4 bg-slate-200 rounded w-full" />
+    <div className="h-4 bg-slate-200 rounded w-5/6" />
+    <div className="h-4 bg-slate-200 rounded w-3/4" />
+    <div className="h-4 bg-slate-200 rounded w-2/4" />
   </section>
 );
 
 const SidebarSkeleton = () => (
   <aside className="col-span-4 space-y-4 animate-pulse">
-    <div className="h-6 bg-gray-300 w-1/2 rounded" />
+    <div className="h-6 bg-slate-300 w-1/2 rounded" />
     {[...Array(4)].map((_, i) => (
       <div key={i} className="mb-8 flex flex-col">
-        <div className="h-[14rem] bg-gray-200 rounded mb-2" />
-        <div className="h-4 bg-gray-200 rounded mb-1" />
-        <div className="h-10 bg-gray-200 rounded mb-4" />
-        <div className="h-6 bg-gray-200 rounded mb-2" />
+        <div className="h-[14rem] bg-slate-200 rounded mb-2" />
+        <div className="h-4 bg-slate-200 rounded mb-1" />
+        <div className="h-10 bg-slate-200 rounded mb-4" />
+        <div className="h-6 bg-slate-200 rounded mb-2" />
       </div>
     ))}
   </aside>
@@ -230,34 +230,36 @@ const PostDetail = () => {
   };
 
   const likeCommentSection = (post: any, comments: any) => (
-    <section className="flex items-center justify-between bg-slate-100 p-2 px-4 rounded-lg text-sm font-normal">
-      <div className="flex items-center justify-between">
+    <section className="flex items-center justify-between bg-card p-2 px-4 rounded-lg text-sm font-normal">
+      <div className="flex items-center gap-2">
         <ActionIcon
           onClick={handleLikeToggle}
           variant="transparent"
           size="xl"
           color="red"
-          aria-label={liked ? "Unlike post" : "Like post"}
         >
-          {liked ? <IconHeartFilled /> : <IconHeart />}&nbsp;
-          <span className={`text-sm font-normal`}>{post?.likeCount || 0}</span>
+          {liked ? <IconHeartFilled color="red" /> : <IconHeart />}
+          <span className="text-sm font-normal ml-1">
+            {post?.likeCount || 0}
+          </span>
         </ActionIcon>
         <Button
           onClick={scrollToComments}
           variant="transparent"
-          aria-label="Comment on post"
+          className="flex items-center gap-1 text-primary"
         >
           <IconMessage />
-          &nbsp;
-          <span className={`text-sm font-normal`}>{comments?.length || 0}</span>
+          <span className="text-sm font-normal ml-1">
+            {comments?.length || 0}
+          </span>
         </Button>
-        <div className={`flex items-center text-sm font-normal text-primary`}>
+        <div className="flex items-center text-sm font-normal text-primary">
           <IconEye />
-          &nbsp;{post?.viewCount || 0}
+          <span className="ml-1">{post?.viewCount || 0}</span>
         </div>
       </div>
       <Button onClick={openShare} variant="transparent" radius="lg">
-        <IconShare />
+        <IconShare className="text-primary" />
       </Button>
       <ShareModal opened={shareOpen} onClose={closeShare} />
     </section>
@@ -282,20 +284,15 @@ const PostDetail = () => {
               <h1 className="text-2xl font-bold text-primary">
                 {details?.title}
               </h1>
-
-              <div className="flex justify-end flex-1">
-                <div
-                  className={`flex flex-wrap max-w-[200px] ${details?.tags?.length <= 2 ? "whitespace-nowrap" : ""}`}
-                >
-                  {details?.tags?.slice(0, 3).map((t: any) => (
-                    <span
-                      key={t.id}
-                      className="px-2 text-sm bg-secondary rounded-lg text-[#fefe] m-1 w-fit"
-                    >
-                      <Link href="#">{t.title}</Link>
-                    </span>
-                  ))}
-                </div>
+              <div className="flex flex-wrap max-w-[200px]">
+                {details?.tags?.slice(0, 3).map((t: any) => (
+                  <span
+                    key={t.id}
+                    className="px-2 text-sm bg-primary text-white rounded-lg m-1 w-fit"
+                  >
+                    <Link href="#">{t.title}</Link>
+                  </span>
+                ))}
               </div>
             </header>
 
@@ -347,9 +344,10 @@ const PostDetail = () => {
                 <div className="relative rounded-lg overflow-hidden bg-light-bg">
                   <div className="max-h-[50rem] overflow-hidden relative">
                     <div
-                      className="prose max-w-none"
+                      className="prose max-w-none prose-invert"
                       dangerouslySetInnerHTML={{ __html: details?.content }}
                     />
+
                     <div
                       className="absolute bottom-0 left-0 right-0 h-[12rem] backdrop-blur-sm pointer-events-none"
                       style={{
@@ -472,12 +470,12 @@ const PostDetail = () => {
                     </h3>
                     <p
                       dangerouslySetInnerHTML={{ __html: p.content }}
-                      className="mb-4 line-clamp-2 text-sm"
+                      className="mb-4 line-clamp-2 text-sm text-foreground"
                     />
                     {p.tags?.map((t: any) => (
                       <span
                         key={t.id}
-                        className="text-sm px-2 bg-secondary rounded-lg text-[#fefe] m-1"
+                        className="text-sm px-2 bg-primary text-foreground rounded-lg m-1"
                       >
                         {t.title}
                       </span>
