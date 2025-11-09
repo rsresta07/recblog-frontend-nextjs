@@ -134,3 +134,20 @@ input,
 textarea {
   color: var(--foreground);
 }
+
+.prose {
+  color: var(--foreground-color); /* or #fff for white */
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
+.prose a {
+  color: var(--primary);
+}
+.prose strong {
+  color: var(--foreground-color);
+}

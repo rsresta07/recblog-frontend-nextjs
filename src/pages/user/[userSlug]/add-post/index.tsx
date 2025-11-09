@@ -90,9 +90,37 @@ const AddPost = () => {
             <Text className="text-foreground">Draft</Text>
           </div>
           <div className="flex gap-6 items-center">
-            <Button type="submit" radius="xl" color="primary" loading={loading}>
-              Publish
-            </Button>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`px-4 py-2 rounded text-primary-foreground bg-primary hover:bg-accent transition flex items-center gap-2 ${
+                loading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
+            >
+              {loading && (
+                <svg
+                  className="animate-spin h-4 w-4 text-primary-foreground"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  ></path>
+                </svg>
+              )}
+              {loading ? "Publishing..." : "Publish"}
+            </button>
             <Link
               href={`/user/${slug}`}
               className="text-primary hover:text-accent transition-colors"

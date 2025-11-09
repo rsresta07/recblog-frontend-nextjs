@@ -11,7 +11,7 @@ const showNotify = (condition: string, message: string) => {
   showNotification({
     autoClose: 5000,
     message,
-    color: `${
+    color:
       condition === "success"
         ? "green"
         : condition === "error"
@@ -20,12 +20,15 @@ const showNotify = (condition: string, message: string) => {
             ? "yellow"
             : condition === "notify"
               ? "blue"
-              : ""
-    }`,
+              : "",
     style: {
       backgroundColor: "whitesmoke",
       height: "60px",
-      color: "white",
+      color: "black",
+      textColor: "black",
+      border: "1px solid #ccc",
+      borderRadius: "4px",
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
     },
     loading: false,
   });
