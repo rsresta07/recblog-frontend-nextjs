@@ -18,9 +18,6 @@ function chunk<T>(array: T[], size: number): T[][] {
     : [];
 }
 
-// Display Cards of the Blog
-// TODO: Make the links work
-
 /**
  * A component that displays a grid of user-based recommended blog posts.
  *
