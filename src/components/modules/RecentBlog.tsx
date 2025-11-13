@@ -6,23 +6,29 @@ import { useAuth } from "@/utils/hooks/useAuth";
 import { APIGetRecommendedPosts } from "@/api/recommendation";
 import sanitizeHtml from "sanitize-html";
 
-/**
- * A single blog post item rendered vertically.
- *
- * @param {object} post - Post data. See {@link ApiGetPost} for the shape of the data.
- *
- * @returns {ReactElement} A single blog post item rendered vertically.
- */
-const BlogPostVertical = ({ post }: any) => {
+/** Skeleton Loader for placeholder UI */
+const Skeleton = ({ className }: { className: string }) => (
+  <div className={`bg-muted animate-pulse rounded-md ${className}`} />
+);
+
+/** Blog Post (Vertical Layout) */
+const BlogPostVertical = ({ post, loading }: any) => {
+  if (loading || !post)
+    return (
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-[13rem] w-full rounded-lg" />
+        <Skeleton className="h-4 w-1/3" />
+        <Skeleton className="h-6 w-2/3" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    );
+
   const cleanHtml = sanitizeHtml(post?.content, {
     allowedTags: sanitizeHtml.defaults.allowedTags,
-    allowedAttributes: {
-      "*": ["href", "src", "alt"], // allow minimal useful stuff
-    },
+    allowedAttributes: { "*": ["href", "src", "alt"] },
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
       "*": (tagName, attribs) => {
-        // strip style attributes completely
         delete attribs.style;
         return { tagName, attribs };
       },
@@ -33,7 +39,7 @@ const BlogPostVertical = ({ post }: any) => {
     <div className="flex flex-col gap-4 transform transition-transform duration-300 hover:scale-[1.05]">
       <Link href={`/blog/${post?.slug}`}>
         <Image
-          src={post?.image || "/vercel.svg"}
+          src={post?.image}
           alt={post?.title || "Blog Post Image"}
           width={1024}
           height={1024}
@@ -47,7 +53,6 @@ const BlogPostVertical = ({ post }: any) => {
               {post?.user?.fullName}
             </Link>
           )}
-          {/*- {post.date}*/}
         </span>
         <Link href={`/blog/${post?.slug}`}>
           <h3 className="text-lg font-bold line-clamp-2 text-primary">
@@ -55,13 +60,13 @@ const BlogPostVertical = ({ post }: any) => {
           </h3>
           <div
             dangerouslySetInnerHTML={{ __html: cleanHtml }}
-            className="mb-4 text-[#1e1e1e] text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-3"
+            className="mb-4 text-foreground text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-3"
           />
         </Link>
         {post?.tags?.map((tag: any) => (
           <span
             key={tag?.id}
-            className="text-sm px-2 bg-secondary rounded-lg text-[#fdfdfd] m-1"
+            className="text-sm px-2 bg-primary rounded-lg text-primary-foreground m-1"
           >
             <Link href={`#`}>{tag?.title}</Link>
           </span>
@@ -71,24 +76,26 @@ const BlogPostVertical = ({ post }: any) => {
   );
 };
 
-/**
- * A single blog post item rendered horizontally.
- *
- * @param {object} post - Post data. See {@link ApiGetPost} for the shape of the data.
- * @param {string} imageHeight - The height of the image in the component.
- *
- * @returns {ReactElement} A single blog post item rendered horizontally.
- */
-const BlogPostHorizontal = ({ post, imageHeight }: any) => {
+/** Blog Post (Horizontal Layout) */
+const BlogPostHorizontal = ({ post, imageHeight, loading }: any) => {
+  if (loading || !post)
+    return (
+      <div className="grid grid-cols-2 gap-8">
+        <Skeleton className={`${imageHeight} w-full rounded-lg`} />
+        <div>
+          <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-6 w-2/3 my-2" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    );
+
   const cleanHtml = sanitizeHtml(post?.content, {
     allowedTags: sanitizeHtml.defaults.allowedTags,
-    allowedAttributes: {
-      "*": ["href", "src", "alt"], // allow minimal useful stuff
-    },
+    allowedAttributes: { "*": ["href", "src", "alt"] },
     allowedSchemes: ["http", "https", "mailto"],
     transformTags: {
       "*": (tagName, attribs) => {
-        // strip style attributes completely
         delete attribs.style;
         return { tagName, attribs };
       },
@@ -99,7 +106,7 @@ const BlogPostHorizontal = ({ post, imageHeight }: any) => {
     <div className="grid grid-cols-2 gap-8 transform transition-transform duration-300 hover:scale-[1.05]">
       <Link href={`/blog/${post?.slug}`}>
         <Image
-          src={post?.image || "/vercel.svg"}
+          src={post?.image}
           alt={post?.title || "Blog Post Image"}
           width={1024}
           height={1024}
@@ -113,7 +120,6 @@ const BlogPostHorizontal = ({ post, imageHeight }: any) => {
               {post?.user?.fullName}
             </Link>
           )}
-          {/*- {post.date}*/}
         </span>
         <Link href={`/blog/${post?.slug}`}>
           <h3 className="text-lg font-bold line-clamp-1 text-primary">
@@ -121,13 +127,13 @@ const BlogPostHorizontal = ({ post, imageHeight }: any) => {
           </h3>
           <div
             dangerouslySetInnerHTML={{ __html: cleanHtml }}
-            className="mb-4 text-[#1e1e1e] text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-3"
+            className="mb-4 text-foreground text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-3"
           />
         </Link>
         {post?.tags?.map((tag: any) => (
           <span
             key={tag?.id}
-            className="text-sm px-2 bg-secondary rounded-lg text-[#fdfdfd] m-1"
+            className="text-sm px-2 bg-primary rounded-lg text-primary-foreground m-1"
           >
             <Link href="#">{tag?.title}</Link>
           </span>
@@ -137,38 +143,19 @@ const BlogPostHorizontal = ({ post, imageHeight }: any) => {
   );
 };
 
-/**
- * A component that displays a list of recent blog posts or recommended posts based on user authentication.
- *
- * If the user is authenticated, it fetches and displays recommended posts. Otherwise, it displays recent posts.
- * The component renders a main vertical blog post and two horizontal blog posts, with an additional highlighted post at the bottom.
- *
- * @returns {JSX.Element} A container with blog posts displayed in a grid layout.
- */
+/** Recent or Recommended Blog Section */
 const RecentBlog = () => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [postData, setPostData] = useState<any[]>([]);
   const { user } = useAuth();
 
-  /**
-   * Fetches the list of blog posts from the server based on user authentication.
-   * If the user is authenticated, it fetches and displays recommended posts.
-   * Otherwise, it displays recent posts.
-   *
-   * @async
-   * @function
-   * @returns {Promise<void>}
-   */
   const fetchData = async () => {
     setLoading(true);
     try {
-      if (user) {
-        const response = await APIGetRecommendedPosts();
-        setPostData(response?.data);
-      } else {
-        const response = await ApiGetPost();
-        setPostData(response?.data);
-      }
+      const response = user
+        ? await APIGetRecommendedPosts()
+        : await ApiGetPost();
+      setPostData(response?.data || []);
     } catch (error) {
       console.error("Failed to fetch:", error);
     }
@@ -179,28 +166,50 @@ const RecentBlog = () => {
     fetchData();
   }, []);
 
+  const hasPosts = postData && postData.length > 0;
+
   return (
     <main className="container mx-auto mb-[10rem]">
       <h2 className="text-3xl font-bold text-primary mb-[1rem]">
-        {user ? "Top Selects for You" : "Recent blog posts"}
+        {user ? "Top Selects for You" : "Recent Blog Posts"}
       </h2>
+
       <div className="grid grid-cols-1 md:grid-cols-10 gap-8">
         <div className="col-span-5">
-          <BlogPostVertical post={postData[0]} />
+          <BlogPostVertical
+            post={hasPosts ? postData[0] : null}
+            loading={loading}
+          />
         </div>
+
         <div className="col-span-5">
           <div className="grid gap-8">
-            {postData.slice(1, 3).map((post: any) => (
-              <BlogPostHorizontal
-                key={post.id}
-                post={post}
-                imageHeight="h-[11rem]"
-              />
-            ))}
+            {loading
+              ? [1, 2].map((i) => (
+                  <BlogPostHorizontal
+                    key={i}
+                    loading={true}
+                    imageHeight="h-[11rem]"
+                  />
+                ))
+              : postData
+                  .slice(1, 3)
+                  .map((post: any) => (
+                    <BlogPostHorizontal
+                      key={post.id}
+                      post={post}
+                      imageHeight="h-[11rem]"
+                    />
+                  ))}
           </div>
         </div>
+
         <div className="col-span-10">
-          <BlogPostHorizontal post={postData[3]} imageHeight="h-[16rem]" />
+          <BlogPostHorizontal
+            post={hasPosts ? postData[3] : null}
+            loading={loading}
+            imageHeight="h-[16rem]"
+          />
         </div>
       </div>
     </main>
