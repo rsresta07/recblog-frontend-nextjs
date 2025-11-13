@@ -316,7 +316,7 @@ const PostDetail = () => {
                     label={isFollowing ? "Following" : "Follow"}
                     onClick={handleFollowToggle}
                     radius="lg"
-                    size="xs"
+                    size="sm"
                     color="#F28F3B"
                   />
                 )}
