@@ -144,71 +144,39 @@ const BlogPostHorizontal = ({ post, imageHeight, loading }: any) => {
 };
 
 /** Recent or Recommended Blog Section */
-const RecentBlog = () => {
-  const [loading, setLoading] = useState(true);
-  const [postData, setPostData] = useState<any[]>([]);
-  const { user } = useAuth();
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = user
-        ? await APIGetRecommendedPosts()
-        : await ApiGetPost();
-      setPostData(response?.data || []);
-    } catch (error) {
-      console.error("Failed to fetch:", error);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const hasPosts = postData && postData.length > 0;
+// RecentBlog.tsx
+const RecentBlog = ({ posts, loading }: { posts: any[]; loading: boolean }) => {
+  const hasPosts = posts.length > 0;
 
   return (
     <main className="container mx-auto mb-[10rem]">
       <h2 className="text-3xl font-bold text-primary mb-[1rem]">
-        {user ? "Top Selects for You" : "Recent Blog Posts"}
+        Recent Blog Posts
       </h2>
-
       <div className="grid grid-cols-1 md:grid-cols-10 gap-8">
         <div className="col-span-5">
           <BlogPostVertical
-            post={hasPosts ? postData[0] : null}
+            post={hasPosts ? posts[0] : null}
             loading={loading}
           />
         </div>
-
         <div className="col-span-5">
           <div className="grid gap-8">
-            {loading
-              ? [1, 2].map((i) => (
-                  <BlogPostHorizontal
-                    key={i}
-                    loading={true}
-                    imageHeight="h-[11rem]"
-                  />
-                ))
-              : postData
-                  .slice(1, 3)
-                  .map((post: any) => (
-                    <BlogPostHorizontal
-                      key={post.id}
-                      post={post}
-                      imageHeight="h-[11rem]"
-                    />
-                  ))}
+            {posts.slice(1, 3).map((post) => (
+              <BlogPostHorizontal
+                key={post.id}
+                post={post}
+                imageHeight="h-[11rem]"
+                loading={loading}
+              />
+            ))}
           </div>
         </div>
-
         <div className="col-span-10">
           <BlogPostHorizontal
-            post={hasPosts ? postData[3] : null}
-            loading={loading}
+            post={hasPosts ? posts[3] : null}
             imageHeight="h-[16rem]"
+            loading={loading}
           />
         </div>
       </div>

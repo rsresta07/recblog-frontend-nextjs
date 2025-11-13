@@ -16,23 +16,12 @@ type User = {
 };
 
 const AdminUsers = () => {
-  // Keep your states
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editUser, setEditUser] = useState<string | null>(null);
-  /**
-   * Fetches the list of users from the server using the `ApiGetAllUsers` function.
-   * Sets the `loading` state to true while the request is in progress and
-   * `error` state if an error occurs. If the request is successful, it sets the
-   * `users` state with the received list of users. Finally, it sets the `loading`
-   * state to false.
-   *
-   * @async
-   * @function
-   * @returns {Promise<void>}
-   */
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -52,9 +41,7 @@ const AdminUsers = () => {
 
   const toggleUserStatus = async (username: string, currentStatus: string) => {
     try {
-      // Call your API to toggle status
       await ApiToggleUserStatus(username);
-      // Refresh the list to show updated status
       fetchUsers();
     } catch (err) {
       console.error("Failed to toggle user status", err);
@@ -86,9 +73,9 @@ const AdminUsers = () => {
     setModalOpen(false);
     setEditUser(null);
   };
-  // Render your table rows WITHOUT the modal inside the loop:
+
   const rows = users.map((user) => (
-    <Table.Tr key={user.id} className="text-secondary">
+    <Table.Tr key={user.id} style={{ color: "var(--foreground)" }}>
       <Table.Td>{user.fullName}</Table.Td>
       <Table.Td>{user.email}</Table.Td>
       <Table.Td>{user.username}</Table.Td>
@@ -97,7 +84,15 @@ const AdminUsers = () => {
       <Table.Td>{user.status}</Table.Td>
       <Table.Td>{new Date(user.last_login_at).toLocaleString()}</Table.Td>
       <Table.Td className="flex items-center gap-2">
-        <Button onClick={() => openModalForUser(user.username)}>Edit</Button>
+        <Button
+          onClick={() => openModalForUser(user.username)}
+          style={{
+            backgroundColor: "var(--primary)",
+            color: "var(--primary-foreground)",
+          }}
+        >
+          Edit
+        </Button>
 
         <Switch
           checked={user.status === "APPROVED"}
@@ -112,11 +107,33 @@ const AdminUsers = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4 text-primary">All Users</h1>
+      <h1
+        className="text-2xl font-bold mb-4"
+        style={{ color: "var(--primary)" }}
+      >
+        All Users
+      </h1>
 
-      <Table striped highlightOnHover>
+      <Table
+        striped
+        highlightOnHover
+        styles={{
+          table: {
+            backgroundColor: "var(--card)",
+            color: "var(--foreground)",
+          },
+          th: {
+            color: "var(--primary)",
+            backgroundColor: "var(--card)",
+            borderColor: "var(--border)",
+          },
+          td: {
+            borderColor: "var(--border)",
+          },
+        }}
+      >
         <Table.Thead>
-          <Table.Tr className="text-primary">
+          <Table.Tr>
             <Table.Th>Full Name</Table.Th>
             <Table.Th>Email</Table.Th>
             <Table.Th>Username</Table.Th>
@@ -134,7 +151,6 @@ const AdminUsers = () => {
         <tbody>{rows}</tbody>
       </Table>
 
-      {/* Only ONE modal rendered here, controlled by state */}
       <EditUserModal
         opened={modalOpen}
         onClose={closeModal}

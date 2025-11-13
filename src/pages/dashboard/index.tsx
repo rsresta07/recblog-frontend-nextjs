@@ -38,7 +38,7 @@ const AdminDashboard = () => {
 
       setUserCount(usersRes?.data?.length || 0);
       setTagCount(tagsRes?.data?.length || 0);
-      setPostCount(postsRes?.data?.length || 0);
+      setPostCount(postsRes?.data?.data?.length || 0);
     } catch (err) {
       console.error("Error fetching dashboard stats", err);
     }

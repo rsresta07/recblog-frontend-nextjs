@@ -9,27 +9,6 @@ import {
 import { Button } from "@mantine/core";
 import { Switch } from "@mantine/core";
 
-/**
- * AdminTags component for managing tags in the admin dashboard.
- *
- * This component allows admins to view, add, and delete tags.
- * It fetches the list of tags from the server on mount and provides
- * options to add new tags or delete existing ones.
- *
- * State:
- * - `tags`: List of tags fetched from the server.
- * - `newTag`: Input value for the new tag to be added.
- * - `loading`: Indicates if the tags are currently being fetched.
- * - `error`: Error message to display if an operation fails.
- *
- * Functions:
- * - `fetchTags`: Fetches all tags from the server and updates the state.
- * - `handleAddTag`: Adds a new tag to the server and refreshes the list.
- * - `handleDeleteTag`: Deletes a tag from the server and refreshes the list.
- *
- * Returns:
- * JSX.Element to render the tag management UI.
- */
 const AdminTags = () => {
   type Tag = {
     id: string;
@@ -42,18 +21,6 @@ const AdminTags = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  /**
-   * Fetches all tags from the server and updates the state.
-   *
-   * - Sets loading state to true while fetching.
-   * - Sets tags state to the response data from the server or an empty array if the response is null.
-   * - Sets an error message to display if an error occurs.
-   * - Sets loading state to false after the fetch is complete.
-   *
-   * @async
-   * @function
-   * @returns {Promise<void>}
-   */
   const fetchTags = async () => {
     setLoading(true);
     try {
@@ -67,21 +34,6 @@ const AdminTags = () => {
     }
   };
 
-  /**
-   * Handles adding a new tag to the server.
-   *
-   * - Trims the new tag input value.
-   * - Adds the new tag to the server using the `ApiAddTag` function.
-   * - Resets the new tag input value.
-   * - Refreshes the list of tags by calling `fetchTags`.
-   *
-   * If an error occurs, it logs the error and sets the error state to be
-   * displayed.
-   *
-   * @async
-   * @function
-   * @returns {Promise<void>}
-   */
   const handleAddTag = async () => {
     if (!newTag.trim()) return;
     try {
@@ -123,12 +75,22 @@ const AdminTags = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4 text-primary">Manage Tags</h1>
+      <h1
+        className="text-2xl font-bold mb-4"
+        style={{ color: "var(--primary)" }}
+      >
+        Manage Tags
+      </h1>
 
       <div className="flex gap-2 mb-4">
         <input
           type="text"
-          className="border px-2 py-1 w-full max-w-xs rounded-lg bg-light-bg text-secondary"
+          className="border px-2 py-1 w-full max-w-xs rounded-lg"
+          style={{
+            backgroundColor: "var(--card)",
+            color: "var(--foreground)",
+            borderColor: "var(--border)",
+          }}
           placeholder="New tag"
           value={newTag}
           onChange={(e) => setNewTag(e.target.value)}
@@ -136,10 +98,20 @@ const AdminTags = () => {
 
         <Button
           variant="filled"
-          color="primary-color"
           radius="md"
           onClick={handleAddTag}
-          className="px-4 py-2 bg-primary text-light-text rounded-lg shadow-lg shadow-secondary hover:bg-secondary transition-colors duration-300"
+          className="px-4 py-2 rounded-lg shadow-lg transition-colors duration-300"
+          style={{
+            backgroundColor: "var(--primary)",
+            color: "var(--primary-foreground)",
+          }}
+          styles={{
+            root: {
+              "&:hover": {
+                backgroundColor: "var(--accent)",
+              },
+            },
+          }}
         >
           Add Tag
         </Button>
@@ -157,8 +129,12 @@ const AdminTags = () => {
             <li
               key={tag?.id}
               className="flex justify-between items-center border p-3 rounded-lg"
+              style={{
+                backgroundColor: "var(--card)",
+                borderColor: "var(--border)",
+              }}
             >
-              <span className="text-secondary">{tag.title}</span>
+              <span style={{ color: "var(--foreground)" }}>{tag.title}</span>
               <div className="flex gap-4 items-center">
                 <Switch
                   checked={tag.status}
@@ -169,7 +145,17 @@ const AdminTags = () => {
                 />
                 <button
                   onClick={() => handleEditTag(tag?.id, tag?.title)}
-                  className="bg-primary px-2 py-1 rounded-lg shadow-lg shadow-secondary hover:bg-accent hover:shadow-accent transition-colors duration-300"
+                  className="px-2 py-1 rounded-lg shadow-lg transition-colors duration-300"
+                  style={{
+                    backgroundColor: "var(--primary)",
+                    color: "var(--primary-foreground)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--accent)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--primary)";
+                  }}
                 >
                   Edit
                 </button>
@@ -184,14 +170,6 @@ const AdminTags = () => {
 
 export default AdminTags;
 
-/**
- * A function that returns a layout that wraps the AdminTags component with the
- * AdminDashboardLayout component.
- *
- * @param {any} page - The page component to be wrapped.
- *
- * @returns {JSX.Element} A JSX element that wraps the AdminTags component.
- */
 AdminTags.getLayout = (page: any) => (
   <AdminDashboardLayout>{page}</AdminDashboardLayout>
 );

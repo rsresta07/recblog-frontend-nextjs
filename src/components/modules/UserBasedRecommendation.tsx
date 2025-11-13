@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import CommonLoader from "@/components/common/CommonLoader";
-import { ApiGetPost } from "@/api/blog";
 import CommonBlogList from "@/components/common/CommonBlogList";
 import { Pagination } from "@mantine/core";
 import { APIUserRecommendedPosts } from "@/api/recommendation";
@@ -56,6 +55,7 @@ const UserBasedRecommendation = ({ limit }: any) => {
 
   useEffect(() => {
     fetchData();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   return (

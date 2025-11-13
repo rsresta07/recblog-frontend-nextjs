@@ -16,7 +16,7 @@ import commonData from "@/utils/mock/commonData.json";
  */
 function CommonLoader({ type }: { type?: string }) {
   return (
-    <section className="flex items-center justify-center fixed inset-0 bg-white z-50">
+    <section className="flex items-center justify-center fixed inset-0 bg-black z-50">
       {type === "pageLoader" ? (
         <div className="h-[60vh] flex items-center justify-center w-full">
           <Loader />

@@ -4,26 +4,19 @@ import { ApiGetPost } from "@/api/blog";
 import CommonBlogList from "@/components/common/CommonBlogList";
 import { useRouter } from "next/router";
 
-function chunk<T>(array: T[], size: number): T[][] {
-  if (!array.length) return [];
-  return [array.slice(0, size), ...chunk(array.slice(size), size)];
-}
-
 const PostPagination = () => {
   const itemsPerPage = 6;
   const [loading, setLoading] = useState(false);
   const [activePage, setPage] = useState(1);
   const [postData, setPostData] = useState<any[]>([]);
-  const router = useRouter();
+  const [totalPages, setTotalPages] = useState(1);
 
-  const paginatedPosts = chunk(postData, itemsPerPage);
-  const currentPosts = paginatedPosts[activePage - 1] || [];
-
-  const fetchData = async () => {
+  const fetchData = async (page: number) => {
     setLoading(true);
     try {
-      const response = await ApiGetPost();
-      setPostData(response?.data || []);
+      const response = await ApiGetPost(page, itemsPerPage); // pass page
+      setPostData(response?.data?.data || []);
+      setTotalPages(response?.data?.meta?.totalPages || 1);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
     } finally {
@@ -32,9 +25,8 @@ const PostPagination = () => {
   };
 
   useEffect(() => {
-    if (!router.isReady) return;
-    fetchData();
-  }, [router.isReady]);
+    fetchData(activePage);
+  }, [activePage]);
 
   return (
     <main className="container mx-auto px-4 mb-40">
@@ -48,7 +40,7 @@ const PostPagination = () => {
         </div>
       ) : (
         <section className="grid grid-cols-12 gap-6">
-          {currentPosts.map((post) => (
+          {postData?.map((post) => (
             <div
               key={post?.id}
               className="col-span-12 sm:col-span-6 md:col-span-4 transform transition-transform duration-300 hover:scale-[1.03]"
@@ -61,10 +53,10 @@ const PostPagination = () => {
         </section>
       )}
 
-      {paginatedPosts.length > 1 && (
+      {totalPages > 1 && (
         <div className="flex justify-center mt-8">
           <Pagination
-            total={paginatedPosts.length}
+            total={totalPages}
             siblings={1}
             value={activePage}
             onChange={setPage}

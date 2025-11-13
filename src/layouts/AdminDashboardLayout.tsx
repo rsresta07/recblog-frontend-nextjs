@@ -1,33 +1,11 @@
 import { AppShell, Box, Button } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { deleteCookie, getCookie } from "cookies-next";
-import websiteData from "@/utils/mock/commonData.json"; // Assuming this contains the project title and other nav data
-import list from "@/utils/mock/sideBar.json"; // Removed as it's not used in this layout's sidebar logic
+import websiteData from "@/utils/mock/commonData.json";
+import list from "@/utils/mock/sideBar.json";
 
-/**
- * A layout component for the admin dashboard.
- *
- * This component wraps the page content in an AppShell and provides a navigation
- * sidebar with links to the project-specific dashboard pages.
- *
- * The component expects a children prop, which should be the JSX to render
- * within the main content area of the page.
- *
- * The layout will automatically redirect to the login page if no token is present
- * in the cookies.
- *
- * The component also includes a logout button in the header that will delete the
- * token and user cookies and redirect to the login page.
- *
- * The component will automatically apply a height of 100vh to the main content
- * area if the content is shorter than the viewport height.
- *
- * @param {Object} props - The component props
- * @param {React.ReactNode} props.children - The content to render in the main area
- * @returns {React.ReactElement} The AppShell component
- */
 export function AdminDashboardLayout({
   children,
 }: {
@@ -35,50 +13,48 @@ export function AdminDashboardLayout({
 }) {
   const [opened, { toggle }] = useDisclosure();
   const router = useRouter();
-  const id = router.query.projectId;
 
   useEffect(() => {
     if (!router.isReady) return;
     const token = getCookie("token");
-    if (!token) {
-      router.push("/"); // Redirect to login if no token
-    }
-  }, [router.isReady, router.pathname, router.query, router]); // Added router to dependency array for completeness
+    if (!token) router.push("/"); // Redirect if no token
+  }, [router.isReady, router]);
 
-  /**
-   * Logs out the user by deleting the user and token cookies.
-   *
-   * This function deletes the "user" and "token" cookies and redirects
-   * the user to the homepage. It is intended to be used as a logout
-   * mechanism in the admin dashboard.
-   *
-   * @async
-   * @function
-   * @returns {Promise<void>} A promise that resolves when the cookies are deleted and redirection occurs.
-   */
   const handleLogout = async () => {
     await deleteCookie("user");
     await deleteCookie("token");
     router.push("/");
   };
 
+  const darkBg = "#171717";
+  const darkCard = "#262626";
+  const darkText = "#e5e5e5";
+  const accentColor = "#1e3a8a";
+  const primaryColor = "#3b82f6";
+  const sidebarColor = "#171717";
+  const sidebarText = "#e5e5e5";
+  const sidebarButtonActive = "#3b82f6";
+  const sidebarButtonActiveText = "#ffffff";
+
   return (
     <AppShell
       header={{ height: 60 }}
       navbar={{
-        width: 250, // Dynamic width based on 'project' state
+        width: 250,
         breakpoint: "sm",
         collapsed: { mobile: !opened },
       }}
       padding="md"
-      style={{ backgroundColor: "#f1f2f6" }}
+      style={{ backgroundColor: darkBg }}
     >
-      <AppShell.Header style={{ backgroundColor: "#f1f2f6" }}>
-        <div className="flex justify-between items-center pt-4 container mx-auto bg-light-bg">
-          <h1 className="text-2xl text-darkText font-bold">
+      <AppShell.Header style={{ backgroundColor: darkBg }}>
+        <div className="flex justify-between items-center pt-4 container mx-auto">
+          <h1 className="text-2xl font-bold" style={{ color: darkText }}>
             {websiteData?.projectTitleSmall}
           </h1>
-          <h1 className="text-2xl text-darkText font-bold">ADMIN DASHBOARD</h1>
+          <h1 className="text-2xl font-bold" style={{ color: darkText }}>
+            ADMIN DASHBOARD
+          </h1>
           <div>
             <Button
               onClick={handleLogout}
@@ -92,41 +68,50 @@ export function AdminDashboardLayout({
           </div>
         </div>
       </AppShell.Header>
-      <AppShell.Navbar style={{ backgroundColor: "#f1f2f6" }}>
-        {/* Removed redundant fixed Box, AppShell.Navbar handles positioning */}
+
+      <AppShell.Navbar style={{ backgroundColor: sidebarColor }}>
         <Box
-          className="flex flex-col gap-4 container mx-auto" // Apply flex and gap to the container Box
+          className="flex flex-col gap-4 container mx-auto"
           style={{
-            width: "100%", // Take full width of the navbar
+            width: "100%",
             padding: "10px",
-            borderRight: "1px solid #eaeaea",
-            height: "calc(100vh - 60px)", // Fill remaining height below header
-            overflowY: "auto", // Enable scrolling for long lists
-            color: "#F1F2F6",
+            borderRight: "1px solid #404040",
+            height: "calc(100vh - 60px)",
+            overflowY: "auto",
           }}
         >
-          {/* Takes user to the project-specific dashboard */}
-          {list?.map((list: any) => (
+          {list?.map((item: any) => (
             <Button
-              key={list?.id} // Move key to the Button as it's now the direct child
-              onClick={() => router.push(`/dashboard/${list?.slug}`)}
+              key={item?.id}
+              onClick={() => router.push(`/dashboard/${item?.slug}`)}
               radius="md"
               size="sm"
-              color="#F28F3B"
+              color={accentColor}
               fullWidth
               variant={
-                router.pathname === `/dashboard/${list?.slug}`
+                router.pathname === `/dashboard/${item?.slug}`
                   ? "filled"
                   : "outline"
               }
+              style={{
+                color:
+                  router.pathname === `/dashboard/${item?.slug}`
+                    ? sidebarButtonActiveText
+                    : sidebarText,
+                backgroundColor:
+                  router.pathname === `/dashboard/${item?.slug}`
+                    ? sidebarButtonActive
+                    : "transparent",
+              }}
             >
-              {list.title}
+              {item.title}
             </Button>
           ))}
         </Box>
       </AppShell.Navbar>
-      <AppShell.Main color="#F1F2F6">
-        <Box style={{ padding: "20px", color: "#F1F2F6" }}>{children}</Box>
+
+      <AppShell.Main style={{ backgroundColor: darkBg }}>
+        <Box style={{ padding: "20px", color: darkText }}>{children}</Box>
       </AppShell.Main>
     </AppShell>
   );

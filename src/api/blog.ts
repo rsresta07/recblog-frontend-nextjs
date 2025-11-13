@@ -6,9 +6,11 @@ import {
   PutRequest,
 } from "@/plugins/http";
 
-export const ApiGetPost = () => GetRequest("/post/active");
+export const ApiGetPost = (page = 1, limit = 10) =>
+  GetRequest(`/post/active?page=${page}&limit=${limit}`);
 
-export const ApiGetAllPost = () => GetRequest(`/post/all`);
+export const ApiGetAllPost = (page = 1, limit = 30) =>
+  GetRequest(`/post/all?page=${page}&limit=${limit}`);
 
 export const APIGetPostDetails = (slug: string) =>
   GetRequest(`/post/details/${slug}`);
@@ -23,6 +25,9 @@ export const APIAddBlog = (slug: string, data: any) =>
   PostRequest(`/post/create/${slug}`, data);
 
 export const ApiDeletePost = (id: string) =>
+  PatchRequest(`/post/delete/${id}`, {});
+
+export const ApiTogglePostStatus = (id: string) =>
   PatchRequest(`/post/delete/${id}`, {});
 
 export const ApiUpdatePost = (id: string, payload: any) =>

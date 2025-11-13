@@ -52,42 +52,62 @@ export default function CommonHeader() {
     return null;
   }
 
-  async function loadData() {
-    const { data: blogPosts } = await ApiGetPost();
-    const actions: SpotlightActionData[] = blogPosts?.map((post: any) => ({
-      id: post.id,
-      label: post.title,
-      onClick: () => router.push(`/blog/${post.slug}`),
-      component: () => (
-        <div
-          onClick={() => router.push(`/blog/${post.slug}`)}
-          className="flex items-center gap-4 p-3 hover:bg-muted rounded cursor-pointer transition-colors"
-        >
-          <img
-            src={post.image}
-            alt={post.title}
-            className="w-12 h-12 object-cover rounded"
-          />
-          <div className="flex flex-col">
-            <span className="font-medium text-sm text-foreground">
-              {post.title}
-            </span>
-            <span className="text-xs text-muted-foreground line-clamp-2">
-              {post.content
-                ?.replace(/<[^>]+>/g, "")
-                .slice(0, 100)
-                .trim() + "…"}
-            </span>
+  async function loadData(query: string = "") {
+    try {
+      // Call your backend API with search param
+      const response = await ApiGetPost(1, 10); // modify if you have a search param in backend
+      const blogPosts = response?.data?.data || [];
+
+      // filter posts by query if backend does not support search param
+      const filteredPosts = query
+        ? blogPosts.filter((post: any) =>
+            post.title.toLowerCase().includes(query.toLowerCase())
+          )
+        : blogPosts;
+
+      const actions = filteredPosts.map((post: any) => ({
+        id: post.id,
+        label: post.title,
+        onClick: () => router.push(`/blog/${post.slug}`),
+        component: () => (
+          <div
+            onClick={() => router.push(`/blog/${post.slug}`)}
+            className="flex items-center gap-4 p-3 hover:bg-muted rounded cursor-pointer transition-colors"
+          >
+            <img
+              src={post.image}
+              alt={post.title}
+              className="w-12 h-12 object-cover rounded"
+            />
+            <div className="flex flex-col">
+              <span className="font-medium text-sm text-foreground">
+                {post.title}
+              </span>
+              <span className="text-xs text-muted-foreground line-clamp-2">
+                {post.content
+                  ?.replace(/<[^>]+>/g, "")
+                  .slice(0, 100)
+                  .trim() + "…"}
+              </span>
+            </div>
           </div>
-        </div>
-      ),
-    }));
-    setActions(actions);
+        ),
+      }));
+
+      setActions(actions);
+    } catch (error) {
+      console.error("Failed to fetch posts:", error);
+    }
   }
 
   useEffect(() => {
-    loadData();
-  }, [router]);
+    if (searchQuery.trim().length >= 3) {
+      // start search after 3 characters
+      loadData(searchQuery);
+    } else {
+      setActions([]); // clear actions if query too short
+    }
+  }, [searchQuery]);
 
   return (
     <header className="bg-background border-b border-border">
@@ -125,20 +145,12 @@ export default function CommonHeader() {
 
         {/* Spotlight */}
         <Spotlight
-          actions={
-            searchQuery.trim()
-              ? actions.filter((action) =>
-                  action?.label
-                    ?.toLowerCase()
-                    .includes(searchQuery.toLowerCase())
-                )
-              : []
-          }
+          actions={actions}
           searchProps={{
             value: searchQuery,
             onChange: (e) => setSearchQuery(e.currentTarget.value),
             leftSection: <IconSearch size={20} stroke={1.5} />,
-            placeholder: "Search anything…",
+            placeholder: "Type at least 3 characters to search…",
           }}
           highlightQuery
           className="bg-background text-foreground"

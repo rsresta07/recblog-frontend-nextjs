@@ -116,7 +116,7 @@ const PostDetail = () => {
 
   const loadRecent = useCallback(async () => {
     const r = await ApiGetPost();
-    setPostData(r?.data || []);
+    setPostData(r?.data?.data || []);
   }, []);
 
   useEffect(() => {

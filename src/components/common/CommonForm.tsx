@@ -1,5 +1,5 @@
 import { useForm, FormProvider } from "react-hook-form";
-import { TextInput, Button, Text, Anchor } from "@mantine/core";
+import { TextInput, PasswordInput, Button, Text, Anchor } from "@mantine/core";
 
 const CommonForm = ({
   fields,
@@ -26,6 +26,30 @@ const CommonForm = ({
   const renderInput = (field: any) => {
     if (field.render) {
       return <div key={field.name}>{field.render()}</div>;
+    }
+
+    // Use PasswordInput for password fields
+    if (field.type === "password") {
+      return (
+        <PasswordInput
+          {...register(field.name)}
+          key={field.name}
+          label={field.label}
+          placeholder={field.placeholder}
+          autoComplete={field.autoComplete ?? "off"}
+          withAsterisk
+          classNames={{
+            input:
+              "bg-background text-foreground border border-border placeholder:text-muted-foreground",
+            label: "text-primary",
+          }}
+          error={
+            typeof errors[field.name]?.message === "string" && (
+              <Text color="red">{errors[field.name]?.message as string}</Text>
+            )
+          }
+        />
+      );
     }
 
     return (
