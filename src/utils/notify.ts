@@ -3,9 +3,8 @@ import { showNotification } from "@mantine/notifications";
 /**
  * Displays a notification with a specified message and style based on the condition.
  *
- * @param {string} condition - The condition that determines the color of the notification.
- *                             Possible values are "success", "error", "warning", and "notify".
- * @param {string} message - The message to be displayed in the notification.
+ * @param {string} condition - "success" | "error" | "warning" | "notify"
+ * @param {string} message - Notification message
  */
 const showNotify = (condition: string, message: string) => {
   showNotification({
@@ -22,13 +21,12 @@ const showNotify = (condition: string, message: string) => {
               ? "blue"
               : "",
     style: {
-      backgroundColor: "whitesmoke",
+      backgroundColor: "black",
       height: "60px",
-      color: "black",
-      textColor: "black",
-      border: "1px solid #ccc",
-      borderRadius: "4px",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+      color: "white",
+      border: "1px solid #333",
+      borderRadius: "6px",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.4)",
     },
     loading: false,
   });

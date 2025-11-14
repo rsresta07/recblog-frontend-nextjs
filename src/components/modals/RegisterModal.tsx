@@ -95,18 +95,77 @@ const RegisterModal = ({ openLoginModal }: { openLoginModal: () => void }) => {
         setIsOpen(false);
         setShowLogin(true);
       } else {
-        showNotify("fail", "Something went wrong. Please try again.");
+        showNotify("error", "Something went wrong. Please try again.");
       }
     } catch (error: any) {
-      const code = error?.response?.data?.statusCode ?? error?.response?.status;
-      const message = error?.response?.data?.message || "Unexpected error";
+      // debug: inspect raw error in console (remove in prod)
+      // eslint-disable-next-line no-console
+      console.error("Register error (raw):", error);
+
+      // Try common locations
+      let errData: any = null;
+
+      // Axios-style: error.response.data
+      if (error?.response && (error.response.data || error.response.status)) {
+        errData = error.response.data ?? {
+          status: error.response.status,
+          message: error.response.statusText,
+        };
+      }
+
+      // If nothing yet and error is plain object like {statusCode, message}
+      if (
+        !errData &&
+        typeof error === "object" &&
+        (error.statusCode || error.message)
+      ) {
+        errData = error;
+      }
+
+      // If error is a string that might be JSON, try to parse it
+      if (!errData && typeof error === "string") {
+        try {
+          const parsed = JSON.parse(error);
+          if (parsed && (parsed.statusCode || parsed.message)) errData = parsed;
+        } catch (e) {
+          // not JSON — preserve original string
+          errData = { message: error };
+        }
+      }
+
+      // If still nothing, maybe error.message contains JSON
+      if (!errData && typeof error?.message === "string") {
+        try {
+          const parsed = JSON.parse(error.message);
+          if (parsed && (parsed.statusCode || parsed.message)) errData = parsed;
+          else errData = { message: error.message };
+        } catch {
+          errData = { message: error.message };
+        }
+      }
+
+      // If still nothing, fallback to minimal shape
+      errData = errData || { message: "Unexpected error", statusCode: 500 };
+
+      const code = Number(
+        errData.statusCode || errData.status || error?.response?.status || 500
+      );
+      const message = String(
+        errData.message || errData.error || "Unexpected error"
+      );
 
       if (code === 409) {
-        showNotify("fail", "Account already exists. Please log in.");
+        showNotify("error", "Account already exists. Please log in.");
         openLoginModal();
-      } else {
-        showNotify("fail", message);
+        return;
       }
+
+      if (code === 400) {
+        showNotify("error", message);
+        return;
+      }
+
+      showNotify("error", message);
     }
   };
 
