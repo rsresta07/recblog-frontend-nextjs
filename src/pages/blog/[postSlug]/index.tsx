@@ -20,7 +20,7 @@ import {
   APIListComments,
 } from "@/api/social";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import CommonButton from "@/components/common/CommonButton";
 import {
   IconChevronDown,
@@ -73,6 +73,10 @@ const PostDetail = () => {
   const { user } = useAuth();
   const isLoggedIn = !!user;
 
+  // Use refs to prevent duplicate calls
+  const hasFetchedDetails = useRef(false);
+  const hasFetchedRecommendations = useRef(false);
+
   // UI State
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [details, setDetails] = useState<any | null>(null);
@@ -83,104 +87,233 @@ const PostDetail = () => {
   const [newComment, setNewComment] = useState("");
   const [recommendedPosts, setRecommendedPosts] = useState<any[]>([]);
   const [showFullContent, setShowFullContent] = useState(false);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] =
+    useState(true);
 
   const [shareOpen, { open: openShare, close: closeShare }] =
     useDisclosure(false);
-  // login modal control
   const [loginOpen, { open: openLogin, close: closeLogin }] =
     useDisclosure(false);
 
-  // initial fetch
-  const loadDetails = useCallback(async () => {
-    if (!postSlug) return;
-    const { data } = isLoggedIn
-      ? await APIGetPostDetailsAuth(postSlug)
-      : await APIGetPostDetails(postSlug);
-    setDetails(data);
-    setComments(data?.comments || []);
-
-    /* pre‑load like / follow status (optional if BE sends flags) */
-    if (data?.user?.id) {
-      APIAmIFollowing(data.user.id)
-        .then((r: any) => setIsFollowing(r?.data?.following))
-        .catch(() => {});
-    }
-    if (data?.id) {
-      APIDoILike(data.id)
-        .then((r: any) => setLiked(r?.data?.liked))
-        .catch(() => {});
-    }
-
-    await refreshComments(data.id);
-  }, [postSlug, isLoggedIn]);
-
-  const loadRecent = useCallback(async () => {
-    const r = await ApiGetPost();
-    setPostData(r?.data?.data || []);
-  }, []);
-
+  // Load recent posts (fallback)
   useEffect(() => {
-    if (isReady) loadDetails();
-    loadRecent();
-  }, [isReady, loadDetails, loadRecent]);
+    let isMounted = true;
 
-  useEffect(() => {
-    if (!user) {
-      // not logged in → show recent blogs
-      setRecommendedPosts(postData.slice(0, 8));
-      return;
-    }
-
-    if (!details?.id) {
-      // user is logged in but blog details missing → fallback to general
-      APIGetRecommendedPosts()
-        .then((res: any) => {
-          setRecommendedPosts(res.data || []);
-        })
-        .catch(() => {
-          setRecommendedPosts(postData.slice(0, 8));
-        });
-      return;
-    }
-
-    // user logged in & blog detail exists → try post-context recommendations
-    APIGetPostContextRecommendations(details.id)
-      .then((res: any) => {
-        if (res.data?.length) {
-          setRecommendedPosts(res.data); // tag-based recommendations
-        } else {
-          // fallback to general if no matched tags
-          APIGetRecommendedPosts()
-            .then((res2: any) => {
-              setRecommendedPosts(res2.data || []);
-            })
-            .catch(() => {
-              setRecommendedPosts(postData.slice(0, 8)); // fallback to recent
-            });
+    const loadRecent = async () => {
+      try {
+        const r = await ApiGetPost();
+        if (isMounted) {
+          setPostData(r?.data?.data || []);
         }
-      })
-      .catch(() => {
-        // even context call failed → fallback to general
-        APIGetRecommendedPosts()
-          .then((res2: any) => {
-            setRecommendedPosts(res2.data || []);
-          })
-          .catch(() => {
-            setRecommendedPosts(postData.slice(0, 8)); // fallback to recent
-          });
-      });
+      } catch (error) {
+        console.error("Failed to load recent posts:", error);
+      }
+    };
+
+    loadRecent();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Only run once on mount
+
+  // Load post details
+  useEffect(() => {
+    if (!isReady || !postSlug || hasFetchedDetails.current) return;
+
+    let isMounted = true;
+    hasFetchedDetails.current = true;
+
+    const loadDetails = async () => {
+      try {
+        const { data } = isLoggedIn
+          ? await APIGetPostDetailsAuth(postSlug)
+          : await APIGetPostDetails(postSlug);
+
+        if (!isMounted) return;
+
+        setDetails(data);
+        setComments(data?.comments || []);
+
+        // Load follow status if user is logged in
+        if (isLoggedIn && data?.user?.id) {
+          APIAmIFollowing(data.user.id)
+            .then((r: any) => {
+              if (isMounted) setIsFollowing(r?.data?.following);
+            })
+            .catch(() => {});
+        }
+
+        // Load like status if user is logged in
+        if (isLoggedIn && data?.id) {
+          APIDoILike(data.id)
+            .then((r: any) => {
+              if (isMounted) setLiked(r?.data?.liked);
+            })
+            .catch(() => {});
+        }
+      } catch (error) {
+        console.error("Failed to load post details:", error);
+      }
+    };
+
+    loadDetails();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isReady, postSlug, isLoggedIn]);
+
+  // Load recommendations
+  // useEffect(() => {
+  //   if (hasFetchedRecommendations.current) return;
+
+  //   // Wait for either details or postData to be available
+  //   if (!details && postData.length === 0) return;
+
+  //   let isMounted = true;
+  //   hasFetchedRecommendations.current = true;
+
+  //   const loadRecommendations = async () => {
+  //     setIsLoadingRecommendations(true);
+
+  //     try {
+  //       // Not logged in - show recent posts
+  //       if (!user) {
+  //         if (isMounted) {
+  //           setRecommendedPosts(postData.slice(0, 8));
+  //           setIsLoadingRecommendations(false);
+  //         }
+  //         return;
+  //       }
+
+  //       // Logged in but no post details yet - show general recommendations
+  //       if (!details?.id) {
+  //         try {
+  //           const res = await APIGetRecommendedPosts();
+  //           if (isMounted) {
+  //             setRecommendedPosts(res?.data || []);
+  //           }
+  //         } catch {
+  //           if (isMounted) {
+  //             setRecommendedPosts(postData.slice(0, 8));
+  //           }
+  //         }
+  //         if (isMounted) setIsLoadingRecommendations(false);
+  //         return;
+  //       }
+
+  //       // Logged in with post details - try context recommendations
+  //       try {
+  //         const res = await APIGetPostContextRecommendations(details.id);
+  //         if (isMounted) {
+  //           if (res.data?.length) {
+  //             setRecommendedPosts(res.data);
+  //           } else {
+  //             // Fallback to general recommendations
+  //             try {
+  //               const res2 = await APIGetRecommendedPosts();
+  //               setRecommendedPosts(res2?.data || []);
+  //             } catch {
+  //               setRecommendedPosts(postData.slice(0, 8));
+  //             }
+  //           }
+  //         }
+  //       } catch {
+  //         // Fallback to general recommendations
+  //         if (isMounted) {
+  //           try {
+  //             const res2 = await APIGetRecommendedPosts();
+  //             setRecommendedPosts(res2?.data || []);
+  //           } catch {
+  //             setRecommendedPosts(postData.slice(0, 8));
+  //           }
+  //         }
+  //       }
+  //     } finally {
+  //       if (isMounted) {
+  //         setIsLoadingRecommendations(false);
+  //       }
+  //     }
+  //   };
+
+  //   loadRecommendations();
+
+  //   return () => {
+  //     isMounted = false;
+  //   };
+  // }, [user, details, postData]); // Only re-run if these change
+
+  useEffect(() => {
+    // Wait for either details or postData to be available
+    if (!details && postData.length === 0) return;
+
+    let isMounted = true;
+    setIsLoadingRecommendations(true);
+
+    const loadRecommendations = async () => {
+      try {
+        // Not logged in - show recent posts
+        if (!user) {
+          if (isMounted) setRecommendedPosts(postData.slice(0, 8));
+          return;
+        }
+
+        // Logged in but no post details yet - general recommendations
+        if (!details?.id) {
+          try {
+            const res = await APIGetRecommendedPosts();
+            if (isMounted) setRecommendedPosts(res?.data || []);
+          } catch (err) {
+            console.error("Failed to fetch general recommendations:", err);
+            if (isMounted) setRecommendedPosts(postData.slice(0, 8));
+          }
+          return;
+        }
+
+        // Logged in with post details - try context recommendations
+        try {
+          const res = await APIGetPostContextRecommendations(details.id);
+          if (isMounted) setRecommendedPosts(res.data || []);
+        } catch (err) {
+          console.error("Failed to fetch context recommendations:", err);
+          // fallback to general recommendations
+          try {
+            const res2 = await APIGetRecommendedPosts();
+            if (isMounted) setRecommendedPosts(res2?.data || []);
+          } catch (err2) {
+            console.error("Failed to fetch general recommendations:", err2);
+            if (isMounted) setRecommendedPosts(postData.slice(0, 8));
+          }
+        }
+      } finally {
+        if (isMounted) setIsLoadingRecommendations(false);
+      }
+    };
+
+    loadRecommendations();
+
+    return () => {
+      isMounted = false;
+    };
   }, [user, details, postData]);
+
+  // Reset flags when route changes
+  useEffect(() => {
+    hasFetchedDetails.current = false;
+    hasFetchedRecommendations.current = false;
+    setDetails(null);
+    setRecommendedPosts([]);
+  }, [postSlug]);
 
   const handleFollowToggle = async () => {
     if (!details?.user?.id) return;
 
     if (!isLoggedIn) {
-      // User not logged in, show login modal
       setShowLoginModal(true);
       return;
     }
 
-    // User is logged in, proceed with follow/unfollow API calls
     try {
       if (isFollowing) {
         await APIUnfollowUser(details.user.id);
@@ -195,6 +328,12 @@ const PostDetail = () => {
 
   const handleLikeToggle = async () => {
     if (!details?.id) return;
+
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+
     try {
       if (liked) {
         await APIUnlikePost(details.id);
@@ -209,8 +348,12 @@ const PostDetail = () => {
 
   const refreshComments = async (postId: string) => {
     if (!postId) return;
-    const r = await APIListComments(postId);
-    setComments(r.data || []);
+    try {
+      const r = await APIListComments(postId);
+      setComments(r.data || []);
+    } catch (error) {
+      console.error("Failed to refresh comments:", error);
+    }
   };
 
   const handleCommentSubmit = async () => {
@@ -218,7 +361,7 @@ const PostDetail = () => {
     try {
       await APIAddComment(details.id, newComment.trim());
       setNewComment("");
-      refreshComments(details.id); // pull fresh list
+      refreshComments(details.id);
     } catch (e) {
       console.error("comment failed:", e);
     }
@@ -269,8 +412,11 @@ const PostDetail = () => {
     <>
       <Head>
         <title>{details?.title} | RecBlog</title>
-        <meta name="description" content={`${details?.title} of RecBlog.`} />
-        <meta property="og:title" content={`${details?.title}`} />
+        <meta
+          name="description"
+          content={`${details?.title || "Blog post"} of RecBlog.`}
+        />
+        <meta property="og:title" content={`${details?.title || "RecBlog"}`} />
         <meta property="og:image" content="/favicon.ico" />
       </Head>
 
@@ -310,7 +456,6 @@ const PostDetail = () => {
                 <p className="text-secondary">{details?.user?.position}</p>
               </div>
               <div>
-                {/* Follow button - hide if current user is author */}
                 {user?.id !== details?.user?.id && (
                   <CommonButton
                     label={isFollowing ? "Following" : "Follow"}
@@ -324,8 +469,6 @@ const PostDetail = () => {
             </div>
 
             <hr />
-
-            {/* {likeCommentSection()} */}
 
             {/* image + content */}
             <section className="flex flex-col gap-8">
@@ -383,7 +526,7 @@ const PostDetail = () => {
             <section className="flex flex-col gap-4 mt-12" id="comment-section">
               {isLoggedIn && likeCommentSection(details, comments)}
 
-              {(isLoggedIn || comments.length > 0) && ( // show nothing if guest & 0 comments
+              {(isLoggedIn || comments.length > 0) && (
                 <>
                   <h3 className="text-xl font-semibold text-secondary">
                     Comments
@@ -432,7 +575,7 @@ const PostDetail = () => {
         )}
 
         {/* recommended posts */}
-        {recommendedPosts.length === 0 ? (
+        {isLoadingRecommendations ? (
           <SidebarSkeleton />
         ) : (
           <aside className="col-span-4">

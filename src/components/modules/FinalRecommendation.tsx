@@ -1,5 +1,6 @@
 import { APIFinalRecommendedPosts } from "@/api/recommendation";
 import BlogPostGrid from "../common/CommonBlogPostGrid";
+import Head from "next/head";
 
 /**
  * A component that displays a grid of final recommended blog posts.
@@ -12,11 +13,16 @@ import BlogPostGrid from "../common/CommonBlogPostGrid";
  */
 const FinalRecommendation = ({ limit }: any) => {
   return (
-    <BlogPostGrid
-      fetchFunction={APIFinalRecommendedPosts}
-      title="For You"
-      limit={limit}
-    />
+    <>
+      <Head>
+        <title>RecBlog | For You</title>
+      </Head>
+      <BlogPostGrid
+        fetchFunction={APIFinalRecommendedPosts}
+        title="For You"
+        limit={limit}
+      />
+    </>
   );
 };
 

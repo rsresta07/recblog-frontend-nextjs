@@ -11,6 +11,7 @@ import CustomSunEditor from "@/components/common/CommonSunEditor";
 import CommonImageUpload from "@/components/common/CommonImageUpload";
 import Link from "next/link";
 import CustomEditor from "@/components/common/CommonSunEditor";
+import Head from "next/head";
 
 type FormValues = {
   title: string;
@@ -82,6 +83,9 @@ const AddPost = () => {
 
   return (
     <main className="pt-5 p-[5rem] bg-background">
+      <Head>
+        <title>RecBlog | Add Post</title>
+      </Head>
       <form onSubmit={handleSubmit(onSubmit)}>
         {/* Top bar */}
         <section className="flex justify-between items-center mb-8">

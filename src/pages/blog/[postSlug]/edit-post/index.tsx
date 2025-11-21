@@ -17,6 +17,7 @@ import { APIGetPostDetails, ApiUpdatePost } from "@/api/blog";
 import { ApiGetTag } from "@/api/tag";
 import CustomSunEditor from "@/components/common/CommonSunEditor";
 import CommonImageUpload from "@/components/common/CommonImageUpload";
+import Head from "next/head";
 
 type TagOption = { value: string; label: string };
 
@@ -151,7 +152,17 @@ const EditPost = () => {
   /* ─ UI ─ */
   return (
     <div className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Edit Post</h1>
+      <Head>
+        <title>RecBlog | Edit Post</title>
+      </Head>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold mb-6">Edit Post</h1>
+        <Group mb="md">
+          <Button variant="outline" color="red" onClick={() => router.back()}>
+            Back
+          </Button>
+        </Group>
+      </div>
       <form onSubmit={handleSubmit(onSubmit)} className="mb-12">
         <Stack>
           <Controller

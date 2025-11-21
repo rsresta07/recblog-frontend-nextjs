@@ -73,7 +73,7 @@ const UserPostList = ({ userData, isOwner }: UserPostProps) => {
                   {post?.tags?.map((tag: any) => (
                     <span
                       key={tag?.id}
-                      className="text-sm px-2 py-1 bg-accent text-accent-foreground rounded-md m-1"
+                      className="text-sm px-2 py-1 bg-accent text-accent-foreground rounded-xl m-1"
                     >
                       <Link href="#">{tag?.title}</Link>
                     </span>

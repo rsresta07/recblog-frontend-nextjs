@@ -4,6 +4,7 @@ import RecommendedBlog from "./RecommendedBlog";
 import PostPagination from "./BlogPostPagination";
 import { ApiGetPost } from "@/api/blog";
 import { useAuth } from "@/utils/hooks/useAuth";
+import Head from "next/head";
 
 export default function HeroSection() {
   const { user } = useAuth();
@@ -21,6 +22,9 @@ export default function HeroSection() {
 
   return (
     <main className="flex flex-col w-full bg-background text-foreground pt-4">
+      <Head>
+        <title>RecBlog | Homepage</title>
+      </Head>
       <section className="flex-grow pt-8 container mx-auto">
         {!user && (
           <div className="flex flex-col gap-4 mb-16 md:mt-[5rem] md:mb-[10rem]">

@@ -7,6 +7,7 @@ import * as z from "zod";
 import { ApiGetMe, ApiUpdateMe } from "@/api/user";
 import showNotify from "@/utils/notify";
 import CommonButton from "@/components/common/CommonButton";
+import Head from "next/head";
 
 // Validation schema
 const schema = z.object({
@@ -85,6 +86,9 @@ const EditProfile = () => {
         color: "var(--foreground)",
       }}
     >
+      <Head>
+        <title>RecBlog | Edit Profile</title>
+      </Head>
       <Title order={3} mb="md" style={{ color: "var(--foreground)" }}>
         Edit Profile
       </Title>
