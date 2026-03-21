@@ -6,10 +6,9 @@ interface CustomEditorProps {
   error?: string;
 }
 
-// TODO: able to add image
-
 const CustomEditor: FC<CustomEditorProps> = ({ value, onChange, error }) => {
   const editableRef = useRef<HTMLDivElement>(null);
+  // ... (keep all your existing useState and command logic exact same)
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
   const [underlineActive, setUnderlineActive] = useState(false);
@@ -33,13 +32,8 @@ const CustomEditor: FC<CustomEditorProps> = ({ value, onChange, error }) => {
     updateToolbar();
   };
 
-  const triggerChange = () => {
-    if (editableRef.current) onChange(editableRef.current.innerHTML);
-  };
-
-  const handleInput = () => {
-    triggerChange();
-  };
+  const triggerChange = () => { if (editableRef.current) onChange(editableRef.current.innerHTML); };
+  const handleInput = () => { triggerChange(); };
 
   const updateToolbar = () => {
     setBoldActive(document.queryCommandState("bold"));
@@ -58,160 +52,73 @@ const CustomEditor: FC<CustomEditorProps> = ({ value, onChange, error }) => {
     if (selection && selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       let node: Node | null = range.commonAncestorContainer;
-      while (node && node.nodeName !== "A") {
-        node = node.parentNode;
-      }
-      if (node && node.nodeName === "A") {
-        return (node as HTMLAnchorElement).href;
-      }
+      while (node && node.nodeName !== "A") node = node.parentNode;
+      if (node && node.nodeName === "A") return (node as HTMLAnchorElement).href;
     }
     return "";
   };
 
+  const btnBase = "text-xs font-semibold px-3 py-1.5 rounded-full transition-colors duration-200 border border-border/40 hover:bg-primary/10";
+  const activeClass = "bg-primary text-primary-foreground border-primary";
+  const inactiveClass = "bg-background/50 text-foreground";
+
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       <style>{`
-        .se-editable h1 {
-          font-size: 2em;
-          font-weight: bold;
-          margin-top: 0.67em;
-          margin-bottom: 0.67em;
-        }
-        .se-editable h2 {
-          font-size: 1.5em;
-          font-weight: bold;
-          margin-top: 0.83em;
-          margin-bottom: 0.83em;
-        }
-        .se-editable h3 {
-          font-size: 1.17em;
-          font-weight: bold;
-          margin-top: 1em;
-          margin-bottom: 1em;
-        }
-        .se-editable ul {
-          list-style-type: disc;
-          margin-left: 1.5em;
-          margin-top: 1em;
-          margin-bottom: 1em;
-        }
-        .se-editable ol {
-          list-style-type: decimal;
-          margin-left: 1.5em;
-          margin-top: 1em;
-          margin-bottom: 1em;
-        }
-        .se-editable li {
-          margin-bottom: 0.5em;
-        }
-        .se-editable a {
-          color: #0000EE;
-          text-decoration: underline;
-        }
-        .se-editable a:visited {
-          color: #551A8B;
-        }
+        .se-editable h1 { font-size: 2em; font-weight: bold; margin: 0.67em 0; }
+        .se-editable h2 { font-size: 1.5em; font-weight: bold; margin: 0.83em 0; }
+        .se-editable h3 { font-size: 1.17em; font-weight: bold; margin: 1em 0; }
+        .se-editable ul { list-style-type: disc; margin: 1em 0 1em 1.5em; }
+        .se-editable ol { list-style-type: decimal; margin: 1em 0 1em 1.5em; }
+        .se-editable li { margin-bottom: 0.5em; }
+        .se-editable a { color: hsl(var(--primary)); text-decoration: underline; }
       `}</style>
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-1 bg-card p-2 rounded-md">
-        <button
-          type="button"
-          onClick={() => execCommand("bold")}
-          className={`text-card-foreground px-2 py-1 border border-border rounded ${boldActive ? "bg-accent" : ""}`}
-        >
-          B
-        </button>
-        <button
-          type="button"
-          onClick={() => execCommand("italic")}
-          className={`text-card-foreground px-2 py-1 border border-border rounded ${italicActive ? "bg-accent" : ""}`}
-        >
-          I
-        </button>
-        <button
-          type="button"
-          onClick={() => execCommand("underline")}
-          className={`text-card-foreground px-2 py-1 border border-border rounded ${underlineActive ? "bg-accent" : ""}`}
-        >
-          U
-        </button>
-        <button
-          type="button"
-          onClick={() => execCommand("strikeThrough")}
-          className={`text-card-foreground px-2 py-1 border border-border rounded ${strikeActive ? "bg-accent" : ""}`}
-        >
-          S
-        </button>
+
+      {/* Floating Glass Toolbar */}
+      <div className="flex flex-wrap items-center gap-2 bg-card/40 backdrop-blur-md p-2 px-3 rounded-3xl border border-border/50 shadow-sm">
+        <button type="button" onClick={() => execCommand("bold")} className={`${btnBase} ${boldActive ? activeClass : inactiveClass}`}>B</button>
+        <button type="button" onClick={() => execCommand("italic")} className={`${btnBase} ${italicActive ? activeClass : inactiveClass}`}>I</button>
+        <button type="button" onClick={() => execCommand("underline")} className={`${btnBase} ${underlineActive ? activeClass : inactiveClass}`}>U</button>
+        <button type="button" onClick={() => execCommand("strikeThrough")} className={`${btnBase} ${strikeActive ? activeClass : inactiveClass}`}>S</button>
+
         <select
           onChange={(e) => execCommand("formatBlock", e.target.value)}
           value={currentHeading}
-          className="bg-card text-card-foreground border border-border rounded px-2 py-1"
+          className="text-xs font-semibold bg-background/50 text-foreground border border-border/40 rounded-full px-3 py-1.5 min-w-[100px] outline-none focus:ring-2 focus:ring-primary/50"
         >
           <option value="p">Paragraph</option>
-          <option value="h1">H1</option>
-          <option value="h2">H2</option>
-          <option value="h3">H3</option>
+          <option value="h1">Heading 1</option>
+          <option value="h2">Heading 2</option>
+          <option value="h3">Heading 3</option>
         </select>
-        <button
-          type="button"
-          onClick={() => execCommand("insertOrderedList")}
-          className={`text-card-foreground px-2 py-1 border border-border rounded ${olActive ? "bg-accent" : ""}`}
-        >
-          OL
-        </button>
-        <button
-          type="button"
-          onClick={() => execCommand("insertUnorderedList")}
-          className={`text-card-foreground px-2 py-1 border border-border rounded ${ulActive ? "bg-accent" : ""}`}
-        >
-          UL
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            const currentUrl = getCurrentLink();
-            const promptUrl = prompt("Enter URL", currentUrl);
-            if (promptUrl === null) return;
-            if (promptUrl === "") {
-              if (linkActive) execCommand("unlink");
-            } else {
-              execCommand("createLink", promptUrl);
-            }
-          }}
-          className={`text-card-foreground px-2 py-1 border border-border rounded ${linkActive ? "bg-accent" : ""}`}
-        >
-          Link
-        </button>
-        <input
-          type="color"
-          onChange={(e) => execCommand("foreColor", e.target.value)}
-          className="w-8 h-8 p-0 border border-border rounded cursor-pointer"
-        />
-        <input
-          type="color"
-          onChange={(e) => execCommand("hiliteColor", e.target.value)}
-          className="w-8 h-8 p-0 border border-border rounded cursor-pointer"
-        />
-        <button
-          type="button"
-          onClick={() => execCommand("undo")}
-          className="text-card-foreground px-2 py-1 border border-border rounded"
-        >
-          Undo
-        </button>
-        <button
-          type="button"
-          onClick={() => execCommand("redo")}
-          className="text-card-foreground px-2 py-1 border border-border rounded"
-        >
-          Redo
-        </button>
+
+        <button type="button" onClick={() => execCommand("insertOrderedList")} className={`${btnBase} ${olActive ? activeClass : inactiveClass}`}>OL</button>
+        <button type="button" onClick={() => execCommand("insertUnorderedList")} className={`${btnBase} ${ulActive ? activeClass : inactiveClass}`}>UL</button>
+        <button type="button" onClick={() => {
+          const currentUrl = getCurrentLink();
+          const promptUrl = prompt("Enter URL", currentUrl);
+          if (promptUrl === null) return;
+          if (promptUrl === "") { if (linkActive) execCommand("unlink"); }
+          else { execCommand("createLink", promptUrl); }
+        }}
+                className={`${btnBase} ${linkActive ? activeClass : inactiveClass}`}
+        >Link</button>
+
+        <div className="flex items-center gap-1 bg-background/50 border border-border/40 rounded-full px-2 py-1">
+          <input type="color" onChange={(e) => execCommand("foreColor", e.target.value)} className="w-5 h-5 p-0 border-0 rounded-full cursor-pointer bg-transparent" title="Text Color" />
+          <input type="color" onChange={(e) => execCommand("hiliteColor", e.target.value)} className="w-5 h-5 p-0 border-0 rounded-full cursor-pointer bg-transparent" title="Highlight Color" />
+        </div>
+
+        <div className="flex gap-1 ml-auto">
+          <button type="button" onClick={() => execCommand("undo")} className={btnBase}>Undo</button>
+          <button type="button" onClick={() => execCommand("redo")} className={btnBase}>Redo</button>
+        </div>
       </div>
 
       {/* Editable Area */}
       <div
         ref={editableRef}
-        className="se-editable p-4 rounded-md bg-card text-card-foreground min-h-[200px] border border-border"
+        className="se-editable p-5 rounded-3xl bg-background/20 backdrop-blur-md text-foreground min-h-[250px] border border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
         contentEditable
         suppressContentEditableWarning
         onInput={handleInput}
@@ -219,18 +126,9 @@ const CustomEditor: FC<CustomEditorProps> = ({ value, onChange, error }) => {
         onKeyUp={updateToolbar}
         onMouseUp={updateToolbar}
         onClick={updateToolbar}
-        style={{
-          outline: "none",
-          textAlign: "left",
-          direction: "ltr",
-          caretColor: "var(--foreground)",
-          whiteSpace: "pre-wrap",
-          wordBreak: "break-word",
-          display: "block",
-        }}
+        style={{ outline: "none", textAlign: "left" }}
       />
-
-      {error && <p className="text-xs text-red-800">{error}</p>}
+      {error && <p className="text-xs text-destructive px-2">{error}</p>}
     </div>
   );
 };

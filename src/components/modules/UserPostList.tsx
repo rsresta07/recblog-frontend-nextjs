@@ -25,11 +25,11 @@ const UserPostList = ({ userData, isOwner }: UserPostProps) => {
   };
 
   return (
-    <section className="mb-40 flex flex-col gap-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-primary text-2xl font-bold">
-          Posts ({posts.length})
-        </h2>
+    <section className="mb-40 flex flex-col gap-6">
+      <div className="flex justify-between items-center pb-4 border-b border-border/50">
+        <h3 className="!mb-0 text-primary">
+          Posts <span className="text-muted-foreground text-base font-normal">({posts.length})</span>
+        </h3>
         {isOwner && (
           <CommonLink
             link={`/user/${userData?.username}/add-post`}
@@ -38,59 +38,61 @@ const UserPostList = ({ userData, isOwner }: UserPostProps) => {
         )}
       </div>
 
-      <section className="grid grid-cols-3 gap-4">
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {posts.length === 0 ? (
-          <div className="col-span-3 text-center text-muted-foreground text-lg py-10">
+          <div className="col-span-full text-center text-muted-foreground py-16 p-8 rounded-2xl bg-card/30 border border-dashed border-border/80">
             {isOwner
               ? "You haven’t shared any posts yet. Time to publish your first one!"
-              : `${userData?.username || "This user"} hasn't posted anything yet.`}
+              : `@${userData?.username || "This user"} hasn't posted anything yet.`}
           </div>
         ) : (
           posts.map((post: any) => (
-            <div key={post.id}>
-              <div className="flex flex-col gap-4 p-4 rounded-lg transform transition-transform duration-300 hover:scale-105 border border-border bg-card text-card-foreground">
+            <div key={post.id} className="h-full">
+              <div className="flex flex-col h-full gap-4 p-4 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm transform transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
                 <Link href={`/blog/${post.slug}`}>
                   <Image
                     src={post.image}
                     alt={post.title || "Blog Post Image"}
                     width={1024}
                     height={1024}
-                    className="h-52 w-full object-cover rounded-md"
+                    className="h-48 w-full object-cover rounded-xl hover:opacity-90 transition-opacity"
                   />
                 </Link>
 
-                <Link href={`/blog/${post.slug}`}>
-                  <h3 className="text-xl font-semibold line-clamp-1">
-                    {post.title}
-                  </h3>
-                  <p
-                    className="mb-4 line-clamp-2 text-sm text-muted-foreground"
-                    dangerouslySetInnerHTML={{ __html: post?.description }}
-                  />
-                </Link>
+                <div className="flex-grow">
+                  <Link href={`/blog/${post.slug}`} className="group">
+                    <h4 className="line-clamp-1 group-hover:text-primary transition-colors !mb-2">
+                      {post.title}
+                    </h4>
+                    <p
+                      className="line-clamp-2 text-sm text-muted-foreground !mt-0"
+                      dangerouslySetInnerHTML={{ __html: post?.description }}
+                    />
+                  </Link>
 
-                <div>
-                  {post?.tags?.map((tag: any) => (
-                    <span
-                      key={tag?.id}
-                      className="text-sm px-2 py-1 bg-accent text-accent-foreground rounded-xl m-1"
-                    >
-                      <Link href="#">{tag?.title}</Link>
-                    </span>
-                  ))}
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {post?.tags?.map((tag: any) => (
+                      <span
+                        key={tag?.id}
+                        className="text-xs px-3 py-1 bg-primary/10 border border-primary/20 text-primary rounded-full"
+                      >
+                        {tag?.title}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 {isOwner && (
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center pt-4 border-t border-border/50 mt-auto">
                     <CommonLink
                       link={`/blog/${post.slug}/edit-post`}
-                      linkLabel="Edit Post"
+                      linkLabel="Edit"
                     />
                     <button
                       onClick={() => handleDelete(post.id)}
-                      className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg shadow hover:opacity-90 transition"
+                      className="px-5 py-2 text-sm font-medium bg-destructive/10 text-destructive border border-destructive/20 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors duration-300"
                     >
-                      Delete Post
+                      Delete
                     </button>
                   </div>
                 )}

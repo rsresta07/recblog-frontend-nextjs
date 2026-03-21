@@ -1,15 +1,11 @@
-// TODO: left to do
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useForm, Controller } from "react-hook-form";
 import {
   TextInput,
-  Button,
   Loader,
   MultiSelect,
   Stack,
-  Group,
   Text,
 } from "@mantine/core";
 import { showNotification } from "@mantine/notifications";
@@ -17,6 +13,7 @@ import { APIGetPostDetails, ApiUpdatePost } from "@/api/blog";
 import { ApiGetTag } from "@/api/tag";
 import CustomSunEditor from "@/components/common/CommonSunEditor";
 import CommonImageUpload from "@/components/common/CommonImageUpload";
+import CommonButton from "@/components/common/CommonButton";
 import Head from "next/head";
 
 type TagOption = { value: string; label: string };
@@ -28,19 +25,6 @@ type FormValues = {
   tagIds: string[];
 };
 
-/**
- * A Next.js page component that allows a user to edit a blog post.
- *
- * The component fetches the post data from the API when the page loads and
- * pre-populates the form with the existing data. It also fetches all tags and
- * populates a multi-select input with them. When the form is submitted, it
- * sends a request to the API to update the post.
- *
- * If the update is successful, it navigates to the user's profile page. If the
- * update fails, it shows a notification with an error message.
- *
- * @returns A JSX component that renders a form to edit a blog post.
- */
 const EditPost = () => {
   const router = useRouter();
   const slug = router?.query?.postSlug as string | undefined;
@@ -62,7 +46,6 @@ const EditPost = () => {
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
 
-  /* ─ fetch data ─ */
   useEffect(() => {
     if (!slug) return;
     (async () => {
@@ -93,16 +76,6 @@ const EditPost = () => {
     })();
   }, [slug, reset]);
 
-  /**
-   * Handles the submission of the edit post form.
-   *
-   * This function constructs a payload with the updated post details and sends
-   * a request to update the post via the API. If the update is successful, it
-   * shows a success notification and navigates to the user's profile page. If
-   * the update fails, it shows an error notification.
-   *
-   * @param {FormValues} data - The form data containing the post details.
-   */
   const onSubmit = async (data: FormValues) => {
     if (!postId) return;
 
@@ -111,131 +84,116 @@ const EditPost = () => {
         title: data.title,
         description: data.description,
         tagIds: data.tagIds,
-        image: currentImageUrl || existingImageUrl, // Use current image URL or keep existing
+        image: currentImageUrl || existingImageUrl,
       };
 
       await ApiUpdatePost(postId, payload);
-      showNotification({
-        color: "green",
-        message: "Post updated successfully!",
-      });
+      showNotification({ color: "green", message: "Post updated successfully!" });
 
-      // Navigate back to the user's profile using the stored authorSlug
-      if (authorSlug) {
-        router.push(`/user/${authorSlug}`);
-      } else {
-        router.push(`/blog/${slug}`);
-        console.warn(
-          "Author slug not found, navigating to post details instead of user profile."
-        );
-      }
+      if (authorSlug) router.push(`/user/${authorSlug}`);
+      else router.push(`/blog/${slug}`);
     } catch (err) {
       console.error(err);
       showNotification({ color: "red", message: "Update failed" });
     }
   };
 
-  /**
-   * Updates the current image URL state and the form value for image.
-   *
-   * @param {string | null} imageUrl - The URL of the new image or null if the image is removed.
-   */
   const handleImageChange = (imageUrl: string | null) => {
     setCurrentImageUrl(imageUrl);
-    // Update the form value
     setValue("image", imageUrl as any);
   };
 
-  if (loading)
-    return <Loader style={{ margin: "4rem auto", display: "block" }} />;
+  if (loading) return <Loader color="var(--primary)" style={{ margin: "4rem auto", display: "block" }} />;
 
-  /* ─ UI ─ */
   return (
-    <div className="p-6 max-w-3xl mx-auto">
+    <main className="container mx-auto px-4 py-8 md:py-12 max-w-3xl">
       <Head>
         <title>RecBlog | Edit Post</title>
       </Head>
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold mb-6">Edit Post</h1>
-        <Group mb="md">
-          <Button variant="outline" color="red" onClick={() => router.back()}>
-            Back
-          </Button>
-        </Group>
+
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+        <h1 className="text-primary !mb-0">Edit Post</h1>
+        <CommonButton
+          label="Go Back"
+          variant="outline"
+          onClick={() => router.back()}
+          fullWidth={false}
+          size="sm"
+        />
       </div>
-      <form onSubmit={handleSubmit(onSubmit)} className="mb-12">
-        <Stack>
-          <Controller
-            name="title"
-            control={control}
-            rules={{ required: "Title is required" }}
-            render={({ field }) => (
-              <TextInput
-                label="Title"
-                withAsterisk
-                {...field}
-                error={errors.title?.message}
-              />
-            )}
-          />
 
-          <label className="text-sm font-medium">Description</label>
-          <Controller
-            name="description"
-            control={control}
-            rules={{ required: "Description is required" }}
-            render={({ field }) => (
-              <CustomSunEditor
-                value={field.value}
-                onChange={field.onChange}
-                error={errors.description?.message}
-                // features={["image", "video"]}
-              />
-            )}
-          />
-          {errors.description && (
-            <Text c="red" size="xs">
-              {errors.description.message}
-            </Text>
-          )}
+      <div className="bg-card/50 backdrop-blur-md border border-border/50 rounded-3xl p-6 md:p-8 shadow-sm">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Stack>
+            <Controller
+              name="title"
+              control={control}
+              rules={{ required: "Title is required" }}
+              render={({ field }) => (
+                <TextInput
+                  label={<span className="text-sm font-semibold mb-1 block">Post Title</span>}
+                  withAsterisk
+                  {...field}
+                  error={errors.title?.message}
+                  classNames={{ input: 'bg-background/50 rounded-full border-border/60 focus:border-primary' }}
+                />
+              )}
+            />
 
-          {/* Image upload with cropping */}
-          <CommonImageUpload
-            control={control}
-            name="image"
-            label="Featured Image"
-            errors={errors}
-            existingImageUrl={existingImageUrl}
-            onImageChange={handleImageChange}
-          />
+            <div>
+              <label className="text-sm font-semibold mb-2 block">Content Description <span className="text-destructive">*</span></label>
+              <div className="rounded-2xl overflow-hidden border border-border/60 shadow-sm">
+                <Controller
+                  name="description"
+                  control={control}
+                  rules={{ required: "Description is required" }}
+                  render={({ field }) => (
+                    <CustomSunEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      error={errors.description?.message}
+                    />
+                  )}
+                />
+              </div>
+              {errors.description && (
+                <Text color="red" size="xs" mt={4}>{errors.description.message}</Text>
+              )}
+            </div>
 
-          <Controller
-            name="tagIds"
-            control={control}
-            rules={{ required: "At least one tag is required" }}
-            render={({ field }) => (
-              <MultiSelect
-                label="Tags"
-                data={tagOptions}
-                searchable
-                withAsterisk
-                {...field}
-                error={errors.tagIds?.message}
-              />
-            )}
-          />
+            <CommonImageUpload
+              control={control}
+              name="image"
+              label="Featured Image"
+              errors={errors}
+              existingImageUrl={existingImageUrl}
+              onImageChange={handleImageChange}
+            />
 
-          <Group>
-            <button
-              type="submit"
-              className="text-foreground bg-primary px-4 py-2 rounded"
-            >
-              Update Post
-            </button>
-          </Group>
-        </Stack>
-      </form>
-    </div>
+            <Controller
+              name="tagIds"
+              control={control}
+              rules={{ required: "At least one tag is required" }}
+              render={({ field }) => (
+                <MultiSelect
+                  label={<span className="text-sm font-semibold mb-1 block">Tags</span>}
+                  data={tagOptions}
+                  searchable
+                  withAsterisk
+                  {...field}
+                  error={errors.tagIds?.message}
+                  classNames={{ input: 'bg-background/50 rounded-2xl border-border/60 focus:border-primary min-h-[45px]' }}
+                />
+              )}
+            />
+
+            <div className="flex justify-end pt-6 border-t border-border/50">
+              <CommonButton type="submit" label="Save Changes" fullWidth={false} />
+            </div>
+          </Stack>
+        </form>
+      </div>
+    </main>
   );
 };
 

@@ -1,14 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { ApiGetPost } from "@/api/blog";
-import { useAuth } from "@/utils/hooks/useAuth";
-import { APIGetRecommendedPosts } from "@/api/recommendation";
 import sanitizeHtml from "sanitize-html";
 
 /** Skeleton Loader for placeholder UI */
 const Skeleton = ({ className }: { className: string }) => (
-  <div className={`bg-muted animate-pulse rounded-md ${className}`} />
+  <div className={`bg-muted animate-pulse rounded-2xl ${className}`} />
 );
 
 /** Blog Post (Vertical Layout) */
@@ -16,7 +12,7 @@ const BlogPostVertical = ({ post, loading }: any) => {
   if (loading || !post)
     return (
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-[13rem] w-full rounded-lg" />
+        <Skeleton className="h-[13rem] w-full" />
         <Skeleton className="h-4 w-1/3" />
         <Skeleton className="h-6 w-2/3" />
         <Skeleton className="h-12 w-full" />
@@ -36,18 +32,18 @@ const BlogPostVertical = ({ post, loading }: any) => {
   });
 
   return (
-    <div className="flex flex-col gap-4 transform transition-transform duration-300 hover:scale-[1.05]">
+    <div className="flex flex-col gap-4 p-4 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm transform transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
       <Link href={`/blog/${post?.slug}`}>
         <Image
           src={post?.image}
           alt={post?.title || "Blog Post Image"}
           width={1024}
           height={1024}
-          className="h-[13rem] object-cover rounded-lg"
+          className="h-[15rem] w-full object-cover rounded-xl"
         />
       </Link>
       <div>
-        <span className="text-primary text-sm">
+        <span className="text-primary font-medium text-sm mb-2 block">
           {post?.user && (
             <Link href={`/user/${post?.user?.slug}`}>
               {post?.user?.fullName}
@@ -55,22 +51,24 @@ const BlogPostVertical = ({ post, loading }: any) => {
           )}
         </span>
         <Link href={`/blog/${post?.slug}`}>
-          <h3 className="text-lg font-bold line-clamp-2 text-primary">
+          <h3 className="line-clamp-2 text-foreground hover:text-primary transition-colors">
             {post?.title}
           </h3>
           <div
             dangerouslySetInnerHTML={{ __html: cleanHtml }}
-            className="mb-4 text-foreground text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-3"
+            className="mb-4 text-muted-foreground text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-3"
           />
         </Link>
-        {post?.tags?.map((tag: any) => (
-          <span
-            key={tag?.id}
-            className="text-sm px-2 bg-primary rounded-lg text-primary-foreground m-1"
-          >
-            <Link href={`#`}>{tag?.title}</Link>
-          </span>
-        ))}
+        <div className="flex flex-wrap gap-2 mt-2">
+          {post?.tags?.map((tag: any) => (
+            <span
+              key={tag?.id}
+              className="text-xs px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-primary"
+            >
+                <Link href={`#`}>{tag?.title}</Link>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -80,11 +78,11 @@ const BlogPostVertical = ({ post, loading }: any) => {
 const BlogPostHorizontal = ({ post, imageHeight, loading }: any) => {
   if (loading || !post)
     return (
-      <div className="grid grid-cols-2 gap-8">
-        <Skeleton className={`${imageHeight} w-full rounded-lg`} />
-        <div>
-          <Skeleton className="h-4 w-1/3" />
-          <Skeleton className="h-6 w-2/3 my-2" />
+      <div className="grid grid-cols-2 gap-6 p-4 rounded-2xl bg-card/50 border border-border/50">
+        <Skeleton className={`${imageHeight} w-full`} />
+        <div className="flex flex-col justify-center">
+          <Skeleton className="h-4 w-1/3 mb-2" />
+          <Skeleton className="h-6 w-2/3 mb-4" />
           <Skeleton className="h-12 w-full" />
         </div>
       </div>
@@ -103,18 +101,18 @@ const BlogPostHorizontal = ({ post, imageHeight, loading }: any) => {
   });
 
   return (
-    <div className="grid grid-cols-2 gap-8 transform transition-transform duration-300 hover:scale-[1.05]">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm transform transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
       <Link href={`/blog/${post?.slug}`}>
         <Image
           src={post?.image}
           alt={post?.title || "Blog Post Image"}
           width={1024}
           height={1024}
-          className={`${imageHeight} w-full object-cover rounded-lg`}
+          className={`${imageHeight} w-full object-cover rounded-xl`}
         />
       </Link>
-      <div>
-        <span className="text-primary text-sm">
+      <div className="flex flex-col justify-center">
+        <span className="text-primary font-medium text-sm mb-2 block">
           {post?.user && (
             <Link href={`/user/${post?.user?.slug}`}>
               {post?.user?.fullName}
@@ -122,46 +120,46 @@ const BlogPostHorizontal = ({ post, imageHeight, loading }: any) => {
           )}
         </span>
         <Link href={`/blog/${post?.slug}`}>
-          <h3 className="text-lg font-bold line-clamp-1 text-primary">
+          <h3 className="line-clamp-2 text-foreground hover:text-primary transition-colors">
             {post?.title}
           </h3>
           <div
             dangerouslySetInnerHTML={{ __html: cleanHtml }}
-            className="mb-4 text-foreground text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-3"
+            className="mb-4 text-muted-foreground text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-3"
           />
         </Link>
-        {post?.tags?.map((tag: any) => (
-          <span
-            key={tag?.id}
-            className="text-sm px-2 bg-primary rounded-lg text-primary-foreground m-1"
-          >
-            <Link href="#">{tag?.title}</Link>
-          </span>
-        ))}
+        <div className="flex flex-wrap gap-2 mt-auto">
+          {post?.tags?.map((tag: any) => (
+            <span
+              key={tag?.id}
+              className="text-xs px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-primary"
+            >
+                <Link href="#">{tag?.title}</Link>
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
 };
 
-/** Recent or Recommended Blog Section */
-// RecentBlog.tsx
 const RecentBlog = ({ posts, loading }: { posts: any[]; loading: boolean }) => {
   const hasPosts = posts.length > 0;
 
   return (
     <main className="container mx-auto mb-[10rem]">
-      <h2 className="text-3xl font-bold text-primary mb-[1rem]">
+      <h2 className="text-primary">
         Recent Blog Posts
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-10 gap-8">
-        <div className="col-span-5">
+      <div className="grid grid-cols-1 md:grid-cols-10 gap-6">
+        <div className="col-span-1 md:col-span-5">
           <BlogPostVertical
             post={hasPosts ? posts[0] : null}
             loading={loading}
           />
         </div>
-        <div className="col-span-5">
-          <div className="grid gap-8">
+        <div className="col-span-1 md:col-span-5">
+          <div className="grid gap-6">
             {posts.slice(1, 3).map((post) => (
               <BlogPostHorizontal
                 key={post.id}
@@ -172,7 +170,7 @@ const RecentBlog = ({ posts, loading }: { posts: any[]; loading: boolean }) => {
             ))}
           </div>
         </div>
-        <div className="col-span-10">
+        <div className="col-span-1 md:col-span-10">
           <BlogPostHorizontal
             post={hasPosts ? posts[3] : null}
             imageHeight="h-[16rem]"

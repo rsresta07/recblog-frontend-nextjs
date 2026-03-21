@@ -4,28 +4,12 @@ import CommonBlogList from "@/components/common/CommonBlogList";
 import { Pagination } from "@mantine/core";
 import { APIUserRecommendedPosts } from "@/api/recommendation";
 
-/**
- * Splits an array into chunks of a specified size.
- *
- * @param array - The array to be split into chunks.
- * @param size - The size of each chunk.
- * @returns A two-dimensional array where each sub-array is a chunk of the specified size.
- */
 function chunk<T>(array: T[], size: number): T[][] {
   return array.length
     ? [array.slice(0, size), ...chunk(array.slice(size), size)]
     : [];
 }
 
-/**
- * A component that displays a grid of user-based recommended blog posts.
- *
- * Uses the APIUserRecommendedPosts function to fetch a list of recommended posts
- * based on user-based collaborative filtering algorithm.
- *
- * @param limit - The number of posts to display in the grid.
- * @returns A JSX element that renders the grid of recommended blog posts.
- */
 const UserBasedRecommendation = ({ limit }: any) => {
   const itemsPerPage = 30;
   const [loading, setLoading] = useState(false);
@@ -34,14 +18,6 @@ const UserBasedRecommendation = ({ limit }: any) => {
   const paginatedPosts = chunk(postData, itemsPerPage);
   const currentPosts = paginatedPosts[activePage - 1] || [];
 
-  /**
-   * Fetches the list of blog posts from the server using the APIUserRecommendedPosts
-   * function and updates the state of the component.
-   *
-   * @async
-   * @function
-   * @returns {Promise<void>}
-   */
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -59,36 +35,38 @@ const UserBasedRecommendation = ({ limit }: any) => {
   }, []);
 
   return (
-    <section className="container mx-auto py-12">
-      <h2 className="text-2xl font-bold text-primary mb-4">All Blog Posts</h2>
+    <section className="container mx-auto py-12 mb-[10rem]">
+      <h2 className="text-primary">Recommended By Users</h2>
 
-      <section className={`grid grid-cols-12 gap-8`}>
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {loading ? (
           <CommonLoader />
         ) : currentPosts.length === 0 ? (
-          <div className="flex justify-center items-center">
-            <h2>No post found</h2>
+          <div className="col-span-full flex justify-center items-center py-20 text-muted-foreground">
+            <h3>No posts found</h3>
           </div>
         ) : (
           currentPosts?.slice(0, limit)?.map((post) => (
-            <div
-              key={post?.id}
-              className="col-span-12 sm:col-span-6 md:col-span-4 lg:col-span-4 transform transition-transform duration-300 hover:scale-[1.05]"
-            >
+            <div key={post?.id} className="h-full">
               <CommonBlogList post={post} />
             </div>
           ))
         )}
       </section>
-      <div className="flex justify-center mt-4">
-        <Pagination
-          total={paginatedPosts.length}
-          siblings={2}
-          value={activePage}
-          onChange={setPage}
-          mt="sm"
-        />
-      </div>
+
+      {paginatedPosts.length > 1 && (
+        <div className="flex justify-center mt-12">
+          <Pagination
+            total={paginatedPosts.length}
+            siblings={2}
+            value={activePage}
+            onChange={setPage}
+            className="bg-background/50 backdrop-blur-md border border-border/50 p-2 rounded-full shadow-sm"
+            color="primary"
+            radius="xl"
+          />
+        </div>
+      )}
     </section>
   );
 };

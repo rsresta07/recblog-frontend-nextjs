@@ -11,7 +11,7 @@ const RecommendedBlog = () => {
 
   return (
     <main className="container mx-auto mb-[10rem]">
-      <h2 className="text-3xl font-bold text-primary mb-6">
+      <h2 className="text-primary">
         Recommended For You
       </h2>
 
@@ -19,27 +19,24 @@ const RecommendedBlog = () => {
         <ListSkeleton />
       ) : (
         <>
-          <section className="grid grid-cols-12 gap-6">
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {currentPosts.map((post) => (
-              <div
-                key={post.id}
-                className="col-span-12 sm:col-span-6 md:col-span-4 transform duration-300 hover:scale-[1.03] bg-card border border-border rounded-lg shadow-md hover:shadow-lg transition"
-              >
+              <div key={post.id} className="h-full">
                 <CommonBlogList post={post} />
               </div>
             ))}
           </section>
 
           {totalPages > 1 && (
-            <div className="flex justify-center mt-8">
+            <div className="flex justify-center mt-12">
               <Pagination
                 total={totalPages}
                 siblings={1}
                 value={activePage}
                 onChange={setPage}
-                className="bg-background rounded-md shadow-sm"
+                className="bg-background/50 backdrop-blur-md border border-border/50 p-2 rounded-full shadow-sm"
                 color="primary"
-                radius="md"
+                radius="xl"
               />
             </div>
           )}

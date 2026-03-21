@@ -1,28 +1,13 @@
-import { useRouter } from "next/router";
-import commonData from "@/utils/mock/commonData.json";
 import Link from "next/link";
+import commonData from "@/utils/mock/commonData.json";
 
-/**
- * CommonLogo component renders the logo of the application.
- * Styled with Tailwind using global CSS variables for colors and fonts.
- */
 const CommonLogo = () => {
   return (
     <Link href="/" className="group inline-block">
-      <h1
-        className="
-          text-2xl sm:text-3xl md:text-4xl 
-          font-bold 
-          text-primary 
-          hover:text-accent 
-          transition-colors duration-200
-          select-none
-        "
-      >
+      <span className="text-2xl md:text-3xl font-extrabold text-primary group-hover:text-primary/80 transition-colors duration-300 tracking-tight select-none">
         {commonData?.projectTitleSmall}
-      </h1>
-      {/* Optional underline animation on hover */}
-      <span className="block h-0.5 bg-primary group-hover:bg-accent mt-1 transition-colors duration-200"></span>
+      </span>
+      <span className="block h-1 w-0 bg-primary/80 group-hover:w-full rounded-full mt-0.5 transition-all duration-500 ease-out"></span>
     </Link>
   );
 };

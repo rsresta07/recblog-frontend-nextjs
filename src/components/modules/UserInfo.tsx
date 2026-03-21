@@ -1,6 +1,5 @@
 "use client";
-import Link from "next/link";
-import { IconAt, IconMapPin, IconPhone } from "@tabler/icons-react";
+import { IconAt, IconBriefcase } from "@tabler/icons-react";
 import CommonLink from "../common/CommonLink";
 import EditPreferencesModal from "../modals/EditPreferencesModal";
 
@@ -13,29 +12,31 @@ const UserInfo = ({ userData, isOwner }: UserInfoProps) => {
   if (!userData) return null;
 
   return (
-    <div className="mb-32 p-6 rounded-lg border border-border bg-card text-card-foreground shadow-sm">
-      <div className="flex justify-between items-start w-full">
+    <div className="mb-16 p-8 rounded-3xl bg-card/50 backdrop-blur-sm border border-border/50 shadow-md">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-6">
         <section>
-          <div className="flex gap-4 items-center">
-            <h2 className="text-3xl font-bold">{userData?.fullName}</h2>
-            <p className="text-sm text-muted-foreground">
-              @ {userData?.username}
+          <div className="flex flex-wrap gap-x-4 items-end mb-2">
+            <h2 className="!mb-0 text-primary">{userData?.fullName}</h2>
+            <p className="text-sm font-medium text-muted-foreground pb-1">
+              @{userData?.username}
             </p>
           </div>
-          <div className="flex flex-col gap-2 mt-2">
-            <div className="flex items-center gap-2 text-lg">
-              <IconAt size={16} />
+          <div className="flex flex-col gap-2 mt-4">
+            <div className="flex items-center gap-2 text-foreground/80">
+              <IconAt size={18} className="text-muted-foreground" />
               <span>{userData?.email}</span>
             </div>
-            <div className="flex items-center gap-2 text-lg">
-              {/* <IconPhone size={16} /> */}
-              <span>{userData?.position}</span>
-            </div>
+            {userData?.position && (
+              <div className="flex items-center gap-2 text-foreground/80">
+                <IconBriefcase size={18} className="text-muted-foreground" />
+                <span>{userData?.position}</span>
+              </div>
+            )}
           </div>
         </section>
 
         {isOwner && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-row md:flex-col gap-3">
             <CommonLink
               link={`/user/${userData?.username}/edit-profile`}
               linkLabel="Edit profile"

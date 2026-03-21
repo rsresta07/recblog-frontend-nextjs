@@ -10,6 +10,27 @@ import { theme } from "@/utils/theme";
 import Head from "next/head";
 import { useEffect } from "react";
 
+// --- ADD THESE IMPORTS ---
+import { Antic, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
+
+// --- CONFIGURE FONTS HERE ---
+const fontSans = Antic({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
+const fontSerif = localFont({
+  src: "../../public/fonts/Signifier-Regular.woff2",
+  variable: "--font-serif",
+});
+
 type CustomAppProps = AppProps & {
   Component: {
     getLayout?: (page: React.ReactElement) => React.ReactElement;
@@ -33,11 +54,12 @@ export default function App({ Component, pageProps }: CustomAppProps) {
   const getLayout = Component.getLayout ?? ((page: React.ReactElement) => page);
 
   useEffect(() => {
-    document.documentElement.classList.add("dark"); // force dark mode
+    document.documentElement.classList.add("dark");
   }, []);
 
   return (
-    <>
+    // Wrap everything in a div that passes the font variables down the tree
+    <main className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} font-sans antialiased`}>
       <Head>
         <link rel="icon" href="/globe.svg" />
       </Head>
@@ -45,6 +67,6 @@ export default function App({ Component, pageProps }: CustomAppProps) {
         <Notifications />
         {getLayout(<Component {...pageProps} />)}
       </MantineProvider>
-    </>
+    </main>
   );
 }

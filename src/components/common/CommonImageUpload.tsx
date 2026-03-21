@@ -1,15 +1,16 @@
 import { Dropzone, IMAGE_MIME_TYPE } from "@mantine/dropzone";
-import { Group, Text, Image, Modal, Button } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { Group, Text, Image as MantineImage, Modal } from "@mantine/core";
+import {ReactNode, useEffect, useState} from "react";
 import { Controller } from "react-hook-form";
 import { CloudUpload, X } from "lucide-react";
 import ImageCropper from "./ImageCropper";
 import { uploadImageToCloudinary } from "@/utils/lib/cloudinaryUpload";
+import CommonButton from "./CommonButton";
 
 interface CommonImageUploadProps {
   control: any;
   name: string;
-  label: string;
+  label: ReactNode;
   rules?: any;
   errors: any;
   required?: boolean;
@@ -17,67 +18,36 @@ interface CommonImageUploadProps {
   onImageChange?: (url: string | null) => void;
 }
 
-/**
- * A component for uploading and managing images with optional cropping and preview functionality.
- *
- * @param {object} control - React Hook Form's control object for managing form state.
- * @param {string} name - The name of the input field.
- * @param {string} label - The label text for the image upload field.
- * @param {object} rules - Validation rules for the input field.
- * @param {object} errors - Object containing validation errors for the input field.
- * @param {boolean} [required=false] - Indicates if the image upload is required.
- * @param {string|null} [existingImageUrl=null] - The URL of an existing image to be displayed initially.
- * @param {function} [onImageChange] - Callback function to notify parent component of image changes.
- *
- * @returns {JSX.Element} The CommonImageUpload component.
- */
 const CommonImageUpload = ({
-  control,
-  name,
-  label,
-  rules,
-  errors,
-  required = false,
-  existingImageUrl = null,
-  onImageChange,
-}: CommonImageUploadProps) => {
+                             control,
+                             name,
+                             label,
+                             rules,
+                             errors,
+                             required = false,
+                             existingImageUrl = null,
+                             onImageChange,
+                           }: CommonImageUploadProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(
-    existingImageUrl
-  );
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(existingImageUrl);
   const [previewUrl, setPreviewUrl] = useState<string | null>(existingImageUrl);
   const [imgSrc, setImgSrc] = useState<string | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | Blob | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [invalid, setInvalid] = useState(false);
 
-  /**
-   * Uploads a cropped image blob to Cloudinary, updates the component state,
-   * and notifies the parent component of the image URL.
-   *
-   * @param {Blob} croppedBlob - The cropped image blob to be uploaded.
-   * @returns {Promise<string>} The URL of the uploaded image.
-   * @throws Will throw an error if the upload fails.
-   */
   const uploadImage = async (croppedBlob: Blob) => {
     try {
       setIsLoading(true);
       setInvalid(false);
 
-      // Convert blob to File object for Cloudinary upload
-      const file = new File([croppedBlob], "cropped-image.png", {
-        type: "image/png",
-      });
-
+      const file = new File([croppedBlob], "cropped-image.png", { type: "image/png" });
       const imageUrl = await uploadImageToCloudinary(file);
+
       setUploadedImageUrl(imageUrl);
       setPreviewUrl(imageUrl);
 
-      // Notify parent component of image change
-      if (onImageChange) {
-        onImageChange(imageUrl);
-      }
-
+      if (onImageChange) onImageChange(imageUrl);
       return imageUrl;
     } catch (error) {
       console.error("Upload failed:", error);
@@ -94,55 +64,46 @@ const CommonImageUpload = ({
     }
   }, [croppedImage]);
 
-  /**
-   * Handles the removal of the uploaded image by resetting the uploaded image URL and preview URL.
-   * Notifies the parent component of the image change by passing null.
-   */
   const handleRemoveImage = () => {
     setUploadedImageUrl(null);
     setPreviewUrl(null);
-    if (onImageChange) {
-      onImageChange(null);
-    }
+    if (onImageChange) onImageChange(null);
   };
 
   return (
-    <>
-      <div>
-        <Text size="sm" mb={5}>
-          {label} {required && <span style={{ color: "red" }}>*</span>}
-        </Text>
+    <div className="w-full">
+      <label className="text-sm font-semibold mb-2 block border-none bg-transparent shadow-none px-0">
+        {label} {required && <span className="text-destructive">*</span>}
+      </label>
 
-        <Controller
-          name={name}
-          control={control}
-          rules={rules}
-          render={({ field }) => (
-            <>
-              {previewUrl ? (
-                <div className="mb-4">
-                  <div className="relative inline-block">
-                    <Image
-                      src={previewUrl}
-                      alt="Preview"
-                      width={220}
-                      height={160}
-                      radius="md"
-                      onClick={() => setShowModal(true)}
-                      className="cursor-pointer hover:opacity-80 transition-opacity"
-                    />
-                    <Button
-                      size="xs"
-                      color="red"
-                      variant="filled"
-                      onClick={handleRemoveImage}
-                      className="absolute top-2 right-2"
-                    >
-                      Remove
-                    </Button>
-                  </div>
+      <Controller
+        name={name}
+        control={control}
+        rules={rules}
+        render={({ field }) => (
+          <>
+            {previewUrl ? (
+              <div className="relative inline-block w-full sm:w-auto bg-background/30 p-2 rounded-3xl border border-border/50">
+                <MantineImage
+                  src={previewUrl}
+                  alt="Preview"
+                  radius="xl"
+                  onClick={() => setShowModal(true)}
+                  className="cursor-pointer hover:opacity-80 transition-opacity w-full sm:w-[250px] object-cover h-[160px]"
+                />
+                <div className="absolute -top-3 -right-3">
+                  <CommonButton
+                    label="Remove"
+                    variant="filled"
+                    color="destructive"
+                    size="xs"
+                    fullWidth={false}
+                    onClick={handleRemoveImage}
+                  />
                 </div>
-              ) : (
+              </div>
+            ) : (
+              <div className="bg-background/30 backdrop-blur-sm border-2 border-dashed border-border/60 rounded-3xl hover:bg-background/50 hover:border-primary/50 transition-all duration-300 overflow-hidden">
                 <Dropzone
                   loading={isLoading}
                   onDrop={(files) => {
@@ -154,77 +115,63 @@ const CommonImageUpload = ({
                   onReject={() => setInvalid(true)}
                   accept={IMAGE_MIME_TYPE}
                   maxSize={5 * 1024 * 1024} // 5MB
+                  classNames={{ inner: 'pointer-events-none' }}
+                  style={{ background: 'transparent', border: 'none' }}
                 >
                   <Group
-                    style={{
-                      minHeight: 160,
-                      pointerEvents: "none",
-                    }}
+                    style={{ minHeight: 180 }}
+                    className="flex flex-col sm:flex-row text-center sm:text-left p-6"
                   >
                     <Dropzone.Accept>
-                      <CloudUpload size={50} color="#6E7191" />
+                      <div className="p-4 bg-primary/20 rounded-full"><CloudUpload size={40} className="text-primary" /></div>
                     </Dropzone.Accept>
                     <Dropzone.Reject>
-                      <X size={50} color="red" />
+                      <div className="p-4 bg-destructive/20 rounded-full"><X size={40} className="text-destructive" /></div>
                     </Dropzone.Reject>
                     <Dropzone.Idle>
-                      <CloudUpload size={50} color="#6E7191" />
+                      <div className="p-4 bg-muted rounded-full"><CloudUpload size={40} className="text-muted-foreground" /></div>
                     </Dropzone.Idle>
 
                     <div>
-                      <Text size="xl" inline color="#6E7191">
-                        Drag image here or click to select file
+                      <Text size="lg" color="var(--foreground)">
+                        Drag image here or click to select
                       </Text>
-                      <Text size="sm" color="dimmed" inline mt={7}>
-                        File should not exceed 5MB
+                      <Text size="sm" color="dimmed" mt={4}>
+                        Supports PNG, JPG, GIF up to 5MB
                       </Text>
                     </div>
                   </Group>
                 </Dropzone>
-              )}
-            </>
-          )}
-        />
-
-        {/* Error Messages */}
-        {errors[name] && (
-          <Text color="red" size="xs" mt={5}>
-            {errors[name].message}
-          </Text>
+              </div>
+            )}
+          </>
         )}
+      />
 
-        {invalid && (
-          <Text color="red" size="xs" mt={5}>
-            Invalid image format or upload failed!
-          </Text>
+      {errors[name] && <Text color="red" size="xs" mt={8}>{errors[name].message}</Text>}
+      {invalid && <Text color="red" size="xs" mt={8}>Invalid image format or upload failed!</Text>}
+
+      <ImageCropper
+        imgSrc={imgSrc}
+        setCroppedImage={setCroppedImage}
+        onClose={() => setImgSrc(null)}
+      />
+
+      <Modal
+        opened={showModal}
+        onClose={() => setShowModal(false)}
+        centered
+        size="xl"
+        title={<span className="font-bold text-primary">Image Preview</span>}
+        classNames={{ content: 'rounded-3xl', header: 'border-b border-border/50 pb-4' }}
+      >
+        {previewUrl && (
+          <div className="p-4 bg-background/50 rounded-2xl flex justify-center">
+            <MantineImage src={previewUrl} alt="Full size preview" fit="contain" radius="lg" style={{ maxHeight: '60vh' }} />
+          </div>
         )}
-
-        {/* Image Cropper Modal */}
-        <ImageCropper
-          imgSrc={imgSrc}
-          setCroppedImage={setCroppedImage}
-          onClose={() => setImgSrc(null)}
-        />
-
-        {/* Preview Modal */}
-        <Modal
-          opened={showModal}
-          onClose={() => setShowModal(false)}
-          centered
-          size="xl"
-          title="Image Preview"
-        >
-          {previewUrl && (
-            <Image
-              src={previewUrl}
-              alt="Full size preview"
-              fit="contain"
-              height={600}
-            />
-          )}
-        </Modal>
-      </div>
-    </>
+      </Modal>
+    </div>
   );
 };
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useForm } from "react-hook-form";
-import { TextInput, Group, Loader, Title } from "@mantine/core";
+import { TextInput, Group, Loader } from "@mantine/core";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { ApiGetMe, ApiUpdateMe } from "@/api/user";
@@ -46,15 +46,12 @@ const EditProfile = () => {
           position: data.position ?? "",
         });
       } catch (error: any) {
-        showNotify(
-          "error",
-          error?.response?.data?.message || "Failed to fetch profile"
-        );
+        showNotify("error", error?.response?.data?.message || "Failed to fetch profile");
       } finally {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [form]);
 
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
@@ -72,113 +69,75 @@ const EditProfile = () => {
 
   if (loading) {
     return (
-      <Group mt="xl">
-        <Loader color="var(--foreground)" />
-      </Group>
+      <div className="flex justify-center items-center min-h-[50vh]">
+        <Loader color="var(--primary)" />
+      </div>
     );
   }
 
   return (
-    <section
-      className="pt-12 p-[12rem] pb-[15rem]"
-      style={{
-        backgroundColor: "var(--background)",
-        color: "var(--foreground)",
-      }}
-    >
+    <main className="container mx-auto px-4 py-8 md:py-16 max-w-2xl">
       <Head>
         <title>RecBlog | Edit Profile</title>
       </Head>
-      <Title order={3} mb="md" style={{ color: "var(--foreground)" }}>
+
+      <h2 className="text-primary text-center md:text-left mb-8">
         Edit Profile
-      </Title>
+      </h2>
 
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-4"
-      >
-        <TextInput
-          label="Full Name"
-          placeholder="John Doe"
-          {...form.register("fullName")}
-          error={form.formState.errors.fullName?.message}
-          styles={{
-            input: {
-              backgroundColor: "var(--card)",
-              color: "var(--card-foreground)",
-              borderColor: "var(--border)",
-            },
-            label: { color: "var(--foreground)" },
-          }}
-        />
-
-        <TextInput
-          label="Username"
-          placeholder="Edit your username"
-          {...form.register("username")}
-          error={form.formState.errors.username?.message}
-          styles={{
-            input: {
-              backgroundColor: "var(--card)",
-              color: "var(--card-foreground)",
-              borderColor: "var(--border)",
-            },
-            label: { color: "var(--foreground)" },
-          }}
-        />
-
-        <TextInput
-          label="Expertise"
-          placeholder="Web Developer"
-          {...form.register("position")}
-          error={form.formState.errors.position?.message}
-          styles={{
-            input: {
-              backgroundColor: "var(--card)",
-              color: "var(--card-foreground)",
-              borderColor: "var(--border)",
-            },
-            label: { color: "var(--foreground)" },
-          }}
-        />
-
-        <TextInput
-          label="Email"
-          placeholder="Email"
-          {...form.register("email")}
-          error={form.formState.errors.email?.message}
-          styles={{
-            input: {
-              backgroundColor: "var(--card)",
-              color: "var(--card-foreground)",
-              borderColor: "var(--border)",
-            },
-            label: { color: "var(--foreground)" },
-          }}
-        />
-
-        <div className="flex gap-4">
-          <CommonButton
-            label="Cancel"
-            onClick={() => router.back()}
-            variant="light"
-            // style={{
-            //   backgroundColor: "var(--card)",
-            //   color: "var(--card-foreground)",
-            // }}
+      <div className="bg-card/50 backdrop-blur-md border border-border/50 rounded-3xl p-6 md:p-8 shadow-sm">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
+          <TextInput
+            label={<span className="text-sm font-semibold mb-1 block">Full Name</span>}
+            placeholder="John Doe"
+            {...form.register("fullName")}
+            error={form.formState.errors.fullName?.message}
+            classNames={{ input: "bg-background/50 rounded-full border-border/60 focus:border-primary px-4" }}
           />
-          <CommonButton
-            label="Save Changes"
-            type="submit"
-            variant="light"
-            // style={{
-            //   backgroundColor: "var(--primary)",
-            //   color: "var(--primary-foreground)",
-            // }}
+
+          <TextInput
+            label={<span className="text-sm font-semibold mb-1 block">Username</span>}
+            placeholder="Edit your username"
+            {...form.register("username")}
+            error={form.formState.errors.username?.message}
+            classNames={{ input: "bg-background/50 rounded-full border-border/60 focus:border-primary px-4" }}
           />
-        </div>
-      </form>
-    </section>
+
+          <TextInput
+            label={<span className="text-sm font-semibold mb-1 block">Expertise / Position</span>}
+            placeholder="e.g. Web Developer"
+            {...form.register("position")}
+            error={form.formState.errors.position?.message}
+            classNames={{ input: "bg-background/50 rounded-full border-border/60 focus:border-primary px-4" }}
+          />
+
+          <TextInput
+            label={<span className="text-sm font-semibold mb-1 block">Email Address</span>}
+            placeholder="john@example.com"
+            {...form.register("email")}
+            error={form.formState.errors.email?.message}
+            classNames={{ input: "bg-background/50 rounded-full border-border/60 focus:border-primary px-4" }}
+          />
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-end pt-6 border-t border-border/50 mt-4">
+            <CommonButton
+              label="Cancel"
+              onClick={() => router.back()}
+              variant="light"
+              fullWidth={false}
+              className="w-full sm:w-auto"
+            />
+            <CommonButton
+              label="Save Changes"
+              type="submit"
+              variant="filled"
+              fullWidth={false}
+              className="w-full sm:w-auto"
+            />
+          </div>
+        </form>
+      </div>
+    </main>
   );
 };
 

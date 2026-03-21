@@ -23,61 +23,65 @@ const CommonBlogList = ({ post, loading }: any) => {
 
   return (
     <div
-      className="w-full h-full bg-card p-4 rounded-lg flex flex-col overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
+      className="w-full h-full flex flex-col p-4 bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl shadow-sm hover:shadow-md transform transition-all duration-300 hover:-translate-y-1"
       key={post?.id}
     >
-      <div className="overflow-hidden rounded-lg flex-shrink-0 mb-4">
+      <div className="overflow-hidden rounded-xl flex-shrink-0 mb-4">
         <Link href={`/blog/${post?.slug}`}>
           <Image
             src={post?.image}
             alt={post?.title}
             width={1024}
             height={1024}
-            className="w-full h-[18rem] object-cover hover:scale-105 transition-transform duration-300"
+            className="w-full h-[14rem] object-cover hover:scale-105 transition-transform duration-500"
           />
         </Link>
       </div>
-      <div>
-        <span className="text-sm text-primary mb-1 block">
+      <div className="flex flex-col flex-grow">
+        <span className="text-xs font-medium text-primary mb-2 block">
           {post?.user && (
             <Link
               href={`/user/${post?.user?.slug}`}
-              className="hover:text-accent"
+              className="hover:underline"
             >
               {post?.user?.fullName}
             </Link>
           )}
         </span>
-        <Link href={`/blog/${post?.slug}`}>
-          <h3 className="text-lg line-clamp-1 text-primary font-bold hover:text-accent">
+        <Link href={`/blog/${post?.slug}`} className="group">
+          <h3 className="line-clamp-2 text-foreground group-hover:text-primary transition-colors">
             {post?.title}
           </h3>
           <div
             dangerouslySetInnerHTML={{ __html: cleanHtml }}
-            className="mb-4 text-foreground text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-2"
+            className="mb-4 text-muted-foreground text-sm [&_*]:text-sm [&_*]:m-0 line-clamp-2"
           />
+        </Link>
+
+        <div className="flex flex-wrap gap-2 mt-auto mb-4">
           {post?.tags?.map((tag: any) => (
             <span
               key={tag?.id}
-              className="text-sm px-2 bg-primary rounded-lg text-primary-foreground m-1"
+              className="text-xs px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-primary"
             >
               {tag?.title}
             </span>
           ))}
-          <div className="mt-6 text-sm flex items-center justify-end space-x-6 text-foreground">
-            <div className="flex items-center gap-2 text-sm">
-              <IconEye className="text-muted-foreground" />{" "}
-              {post?.viewCount || 0}
+        </div>
+
+        <div className="pt-4 border-t border-border/50 text-xs flex items-center justify-between text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <IconEye size={16} /> {post?.viewCount || 0}
             </div>
-            <div className="flex items-center gap-2">
-              <IconHeart className="text-heart-red" /> {post?.likeCount || 0}
-            </div>
-            <div className="flex items-center gap-2">
-              <IconMessage className="text-muted-foreground" />{" "}
-              {post?.commentCount || 0}
+            <div className="flex items-center gap-1.5">
+              <IconMessage size={16} /> {post?.commentCount || 0}
             </div>
           </div>
-        </Link>
+          <div className="flex items-center gap-1.5 text-destructive">
+            <IconHeart size={16} /> {post?.likeCount || 0}
+          </div>
+        </div>
       </div>
     </div>
   );

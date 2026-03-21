@@ -8,14 +8,10 @@ import RegisterModal from "../modals/RegisterModal";
 import { useAuth } from "@/utils/hooks/useAuth";
 import { useHotkeys } from "@mantine/hooks";
 import { Shortcut } from "@/utils/lib/Shortcut";
-import {
-  Spotlight,
-  spotlight,
-  type SpotlightActionData,
-} from "@mantine/spotlight";
-import { IconSearch } from "@tabler/icons-react";
+import { Spotlight, spotlight, type SpotlightActionData } from "@mantine/spotlight";
+import { IconSearch, IconMenu2, IconX } from "@tabler/icons-react";
 import { ApiGetPost } from "@/api/blog";
-import { Button, TextInput } from "@mantine/core";
+import { TextInput, ActionIcon } from "@mantine/core";
 
 export default function CommonHeader() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -23,6 +19,7 @@ export default function CommonHeader() {
   const [actions, setActions] = useState<SpotlightActionData[]>([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -38,11 +35,7 @@ export default function CommonHeader() {
   };
 
   const rickroll = () =>
-    window.open(
-      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-      "_blank",
-      "noopener,noreferrer"
-    );
+    window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "_blank", "noopener,noreferrer");
 
   function GlobalHotkeys() {
     useHotkeys([
@@ -54,15 +47,12 @@ export default function CommonHeader() {
 
   async function loadData(query: string = "") {
     try {
-      // Call your backend API with search param
-      const response = await ApiGetPost(1, 10); // modify if you have a search param in backend
+      const response = await ApiGetPost(1, 10);
       const blogPosts = response?.data?.data || [];
-
-      // filter posts by query if backend does not support search param
       const filteredPosts = query
         ? blogPosts.filter((post: any) =>
-            post.title.toLowerCase().includes(query.toLowerCase())
-          )
+          post.title.toLowerCase().includes(query.toLowerCase())
+        )
         : blogPosts;
 
       const actions = filteredPosts.map((post: any) => ({
@@ -72,28 +62,18 @@ export default function CommonHeader() {
         component: () => (
           <div
             onClick={() => router.push(`/blog/${post.slug}`)}
-            className="flex items-center gap-4 p-3 hover:bg-muted rounded cursor-pointer transition-colors"
+            className="flex items-center gap-4 p-3 hover:bg-primary/10 rounded-2xl cursor-pointer transition-colors"
           >
-            <img
-              src={post.image}
-              alt={post.title}
-              className="w-12 h-12 object-cover rounded"
-            />
+            <img src={post.image} alt={post.title} className="w-12 h-12 object-cover rounded-xl shadow-sm" />
             <div className="flex flex-col">
-              <span className="font-medium text-sm text-foreground">
-                {post.title}
-              </span>
-              <span className="text-xs text-muted-foreground line-clamp-2">
-                {post.content
-                  ?.replace(/<[^>]+>/g, "")
-                  .slice(0, 100)
-                  .trim() + "…"}
+              <span className="font-semibold text-sm text-foreground">{post.title}</span>
+              <span className="text-xs text-muted-foreground line-clamp-1">
+                {post.content?.replace(/<[^>]+>/g, "").slice(0, 100).trim() + "…"}
               </span>
             </div>
           </div>
         ),
       }));
-
       setActions(actions);
     } catch (error) {
       console.error("Failed to fetch posts:", error);
@@ -101,49 +81,43 @@ export default function CommonHeader() {
   }
 
   useEffect(() => {
-    if (searchQuery.trim().length >= 3) {
-      // start search after 3 characters
-      loadData(searchQuery);
-    } else {
-      setActions([]); // clear actions if query too short
-    }
+    if (searchQuery.trim().length >= 3) loadData(searchQuery);
+    else setActions([]);
   }, [searchQuery]);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [router.asPath]);
+
   return (
-    <header className="bg-background border-b border-border">
-      <section className="container mx-auto flex justify-between items-center py-4">
+    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm">
+      <section className="container mx-auto flex justify-between items-center py-3 px-4 md:px-8">
         <CommonLogo />
 
-        {/* Search for small screens */}
-        <div className="md:hidden">
-          <button
-            aria-label="Search"
-            onClick={() => spotlight.open()}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
-          >
-            <IconSearch size={22} stroke={1.5} className="text-foreground" />
-          </button>
+        {/* Mobile Actions */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ActionIcon variant="light" color="primary" radius="xl" size="lg" onClick={() => spotlight.open()}>
+            <IconSearch size={20} stroke={1.5} />
+          </ActionIcon>
+          <ActionIcon variant="light" color="primary" radius="xl" size="lg" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <IconX size={20} /> : <IconMenu2 size={20} />}
+          </ActionIcon>
         </div>
 
-        {/* Search for large screens */}
+        {/* Desktop Search */}
         <div className="hidden md:flex w-[20rem]">
           <TextInput
             placeholder="Search (Ctrl + K)"
             readOnly
             onClick={() => spotlight.open()}
-            leftSection={
-              <IconSearch
-                size={18}
-                stroke={1.5}
-                className="text-muted-foreground"
-              />
-            }
-            className="w-full bg-card text-foreground"
-            radius="lg"
+            leftSection={<IconSearch size={18} stroke={1.5} className="text-muted-foreground" />}
+            className="w-full"
+            classNames={{ input: 'bg-card/50 backdrop-blur-md border-border/50 cursor-pointer hover:border-primary/50 transition-colors' }}
+            radius="xl"
           />
         </div>
 
-        {/* Spotlight */}
         <Spotlight
           actions={actions}
           searchProps={{
@@ -153,81 +127,69 @@ export default function CommonHeader() {
             placeholder: "Type at least 3 characters to search…",
           }}
           highlightQuery
-          className="bg-background text-foreground"
+          classNames={{ content: 'rounded-3xl', body: 'bg-background/90 backdrop-blur-xl border border-border/50' }}
         >
           <GlobalHotkeys />
           <Shortcut symbol="K" description="Open Spotlight Search" />
           <Shortcut symbol="X" description="Rickroll" />
         </Spotlight>
 
-        {/* Navigation */}
-        <nav className="flex items-center gap-4 text-foreground">
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-6 font-medium text-sm">
           {user && (
             <>
-              <Link
-                href={`/user/${user?.slug}/add-post`}
-                className="text-primary hover:text-accent transition-colors"
-              >
-                Add Post
-              </Link>
-              <Link
-                href={`/recommendation`}
-                className="text-primary hover:text-accent transition-colors"
-              >
-                For You
-              </Link>
+              <Link href={`/user/${user?.slug}/add-post`} className="text-foreground hover:text-primary transition-colors">Add Post</Link>
+              <Link href={`/recommendation`} className="text-foreground hover:text-primary transition-colors">For You</Link>
             </>
           )}
           {headerData?.options?.map((item: any) => (
-            <Link
-              key={item.id}
-              href={item?.link}
-              className="text-primary hover:text-accent transition-colors"
-            >
+            <Link key={item.id} href={item?.link} className="text-foreground hover:text-primary transition-colors">
               {item?.title}
             </Link>
           ))}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 ml-2 border-l border-border/50 pl-6">
             {user ? (
               <>
-                <Link
-                  href={
-                    user.role === "SUPER_ADMIN"
-                      ? `/dashboard/${user?.slug}`
-                      : `/user/${user?.slug}`
-                  }
-                  className="text-primary hover:text-accent transition-colors"
-                >
-                  Profile
-                </Link>
-                <button
-                  onClick={logout}
-                  className="text-destructive hover:text-destructive-foreground transition-colors"
-                >
-                  Logout
-                </button>
+                <Link href={user.role === "SUPER_ADMIN" ? `/dashboard/${user?.slug}` : `/user/${user?.slug}`} className="text-primary hover:text-primary/80 transition-colors">Profile</Link>
+                <button onClick={logout} className="px-4 py-2 bg-destructive/10 text-destructive rounded-full hover:bg-destructive hover:text-white transition-colors">Logout</button>
               </>
             ) : (
               <>
-                <button
-                  onClick={() => setShowLoginModal(true)}
-                  className="text-primary hover:text-accent transition-colors"
-                >
-                  Sign In
-                </button>
-
-                <LoginModal
-                  triggerOpen={showLoginModal}
-                  setTriggerOpen={setShowLoginModal}
-                  openRegisterModal={openRegisterModal}
-                />
-
+                <button onClick={() => setShowLoginModal(true)} className="px-5 py-2 bg-primary text-primary-foreground rounded-full shadow-sm hover:opacity-90 transition-opacity">Sign In</button>
+                <LoginModal triggerOpen={showLoginModal} setTriggerOpen={setShowLoginModal} openRegisterModal={openRegisterModal} />
                 <RegisterModal openLoginModal={() => setShowLoginModal(true)} />
               </>
             )}
           </div>
         </nav>
       </section>
+
+      {/* Mobile Menu Dropdown */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-xl border-b border-border/50 py-4 px-6 flex flex-col gap-4 shadow-lg animate-in slide-in-from-top-2">
+          {user && (
+            <>
+              <Link href={`/user/${user?.slug}/add-post`} className="text-foreground font-medium py-2">Add Post</Link>
+              <Link href={`/recommendation`} className="text-foreground font-medium py-2">For You</Link>
+            </>
+          )}
+          {headerData?.options?.map((item: any) => (
+            <Link key={item.id} href={item?.link} className="text-foreground font-medium py-2 border-t border-border/30">
+              {item?.title}
+            </Link>
+          ))}
+          <div className="flex flex-col gap-3 mt-2 border-t border-border/50 pt-4">
+            {user ? (
+              <>
+                <Link href={user.role === "SUPER_ADMIN" ? `/dashboard/${user?.slug}` : `/user/${user?.slug}`} className="w-full text-center px-4 py-2 bg-primary/10 text-primary rounded-full font-semibold">Profile</Link>
+                <button onClick={logout} className="w-full px-4 py-2 bg-destructive/10 text-destructive rounded-full font-semibold">Logout</button>
+              </>
+            ) : (
+              <button onClick={() => setShowLoginModal(true)} className="w-full px-4 py-3 bg-primary text-primary-foreground rounded-full font-semibold">Sign In</button>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

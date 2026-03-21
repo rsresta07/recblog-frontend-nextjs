@@ -1,20 +1,18 @@
 import { useForm, FormProvider } from "react-hook-form";
-import { TextInput, PasswordInput, Button, Text, Anchor } from "@mantine/core";
+import { TextInput, PasswordInput, Text, Anchor } from "@mantine/core";
 
 const CommonForm = ({
-  fields,
-  onSubmit,
-  validationSchema,
-  buttonText = "Submit",
-  footerLinkText = "",
-  footerLinkLabel = "",
-  footerLinkAction = () => {},
-  twoColumnLayout = true,
-}: any) => {
+                      fields,
+                      onSubmit,
+                      validationSchema,
+                      buttonText = "Submit",
+                      footerLinkText = "",
+                      footerLinkLabel = "",
+                      footerLinkAction = () => {},
+                    }: any) => {
   const methods = useForm({
     resolver: validationSchema,
     mode: "onSubmit",
-    shouldUnregister: false,
   });
 
   const {
@@ -24,51 +22,25 @@ const CommonForm = ({
   } = methods;
 
   const renderInput = (field: any) => {
-    if (field.render) {
-      return <div key={field.name}>{field.render()}</div>;
-    }
+    if (field.render) return <div key={field.name}>{field.render()}</div>;
 
-    // Use PasswordInput for password fields
-    if (field.type === "password") {
-      return (
-        <PasswordInput
-          {...register(field.name)}
-          key={field.name}
-          label={field.label}
-          placeholder={field.placeholder}
-          autoComplete={field.autoComplete ?? "off"}
-          withAsterisk
-          classNames={{
-            input:
-              "bg-background text-foreground border border-border placeholder:text-muted-foreground",
-            label: "text-primary",
-          }}
-          error={
-            typeof errors[field.name]?.message === "string" && (
-              <Text color="red">{errors[field.name]?.message as string}</Text>
-            )
-          }
-        />
-      );
-    }
+    const InputComponent = field.type === "password" ? PasswordInput : TextInput;
 
     return (
-      <TextInput
+      <InputComponent
         {...register(field.name)}
         key={field.name}
-        label={field.label}
+        label={<span className="font-semibold text-sm mb-1 block">{field.label}</span>}
         placeholder={field.placeholder}
         type={field.type || "text"}
         autoComplete={field.autoComplete ?? "off"}
         withAsterisk
         classNames={{
-          input:
-            "bg-background text-foreground border border-border placeholder:text-muted-foreground",
-          label: "text-primary",
+          input: "bg-background/50 backdrop-blur-sm border-border/60 focus:border-primary",
         }}
         error={
           typeof errors[field.name]?.message === "string" && (
-            <Text color="red">{errors[field.name]?.message as string}</Text>
+            <Text color="red" size="xs" mt={4}>{errors[field.name]?.message as string}</Text>
           )
         }
       />
@@ -77,31 +49,27 @@ const CommonForm = ({
 
   return (
     <FormProvider {...methods}>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-8 p-4"
-        autoComplete="off"
-      >
-        <div className="space-y-4">{fields.map(renderInput)}</div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 p-2 sm:p-4" autoComplete="off">
+        <div className="space-y-5">{fields.map(renderInput)}</div>
 
         <button
           type="submit"
-          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 p-2 rounded-md"
+          className="w-full inline-flex justify-center items-center font-semibold py-3 px-6 rounded-full bg-primary/90 text-primary-foreground backdrop-blur-md shadow-sm hover:bg-primary transition-all duration-300 mt-4"
         >
           {buttonText}
         </button>
 
         {footerLinkLabel && (
-          <Text size="sm" className="text-foreground">
+          <div className="text-sm text-center text-muted-foreground pt-2">
             {footerLinkText}{" "}
             <Anchor
               component="button"
               onClick={footerLinkAction}
-              className="cursor-pointer text-secondary hover:underline"
+              className="font-semibold text-primary hover:text-accent transition-colors"
             >
               {footerLinkLabel}
             </Anchor>
-          </Text>
+          </div>
         )}
       </form>
     </FormProvider>

@@ -21,19 +21,18 @@ export default function HeroSection() {
   }, [user]);
 
   return (
-    <main className="flex flex-col w-full bg-background text-foreground pt-4">
+    <main className="flex flex-col w-full pt-4">
       <Head>
         <title>RecBlog | Homepage</title>
       </Head>
       <section className="flex-grow pt-8 container mx-auto">
         {!user && (
-          <div className="flex flex-col gap-4 mb-16 md:mt-[5rem] md:mb-[10rem]">
-            <h1 className="text-center text-4xl md:text-5xl font-bold text-primary">
+          <div className="flex flex-col gap-2 mb-16 md:mt-[5rem] md:mb-[10rem]">
+            <h1 className="text-center text-primary">
               Welcome to RecBlog
             </h1>
-            <h2 className="text-center text-lg md:text-2xl text-foreground">
-              A platform where you can read and write about your favorite
-              topics.
+            <h2 className="text-center !mt-0 text-muted-foreground">
+              A platform where you can read and write about your favorite topics.
             </h2>
           </div>
         )}

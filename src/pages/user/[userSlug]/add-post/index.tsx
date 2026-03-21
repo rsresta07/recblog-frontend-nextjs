@@ -2,12 +2,11 @@ import { Controller, useForm } from "react-hook-form";
 import "suneditor/dist/css/suneditor.min.css";
 import CommonLogo from "@/components/common/CommonLogo";
 import showNotify from "@/utils/notify";
-import { Button, Input, MultiSelect, Text, TextInput } from "@mantine/core";
+import { Input, MultiSelect, Text, TextInput } from "@mantine/core";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { APIAddBlog } from "@/api/blog";
 import { ApiGetTag } from "@/api/tag";
-import CustomSunEditor from "@/components/common/CommonSunEditor";
 import CommonImageUpload from "@/components/common/CommonImageUpload";
 import Link from "next/link";
 import CustomEditor from "@/components/common/CommonSunEditor";
@@ -82,78 +81,73 @@ const AddPost = () => {
   };
 
   return (
-    <main className="pt-5 p-[5rem] bg-background">
+    <main className="min-h-screen bg-background">
       <Head>
         <title>RecBlog | Add Post</title>
       </Head>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        {/* Top bar */}
-        <section className="flex justify-between items-center mb-8">
-          <div className="flex gap-6 items-end">
-            <CommonLogo />
-            <Text className="text-foreground">Draft</Text>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="container mx-auto px-4 py-6 md:py-12 max-w-5xl">
+        {/* Top bar - Better spacing & alignment */}
+        <section className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 md:mb-10 border-b border-border/50 pb-6">
+          <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+            <div className="flex items-center gap-3">
+              <CommonLogo />
+              <div className="h-6 w-[1px] bg-border mx-1 hidden sm:block" />
+              <label className="text-muted-foreground font-medium text-sm md:text-base">Draft</label>
+            </div>
+            {/* Mobile-only Back link to save space */}
+            <Link
+              href={`/user/${slug}`}
+              className="sm:hidden text-xs font-bold text-primary"
+            >
+              BACK
+            </Link>
           </div>
-          <div className="flex gap-6 items-center">
+
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <Link
+              href={`/user/${slug}`}
+              className="hidden sm:block text-primary hover:text-accent font-semibold transition-colors"
+            >
+              Back to Profile
+            </Link>
             <button
               type="submit"
               disabled={loading}
-              className={`px-4 py-2 rounded text-primary-foreground bg-primary hover:bg-accent transition flex items-center gap-2 ${
+              className={`w-full sm:w-auto px-8 py-3 rounded-full text-white font-bold bg-primary hover:scale-[1.02] active:scale-95 shadow-lg transition-all flex justify-center items-center gap-2 ${
                 loading ? "opacity-70 cursor-not-allowed" : ""
               }`}
             >
               {loading && (
-                <svg
-                  className="animate-spin h-4 w-4 text-primary-foreground"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                  ></path>
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                 </svg>
               )}
-              {loading ? "Publishing..." : "Publish"}
+              {loading ? "Publishing..." : "Publish Post"}
             </button>
-            <Link
-              href={`/user/${slug}`}
-              className="text-primary hover:text-accent transition-colors"
-            >
-              Profile
-            </Link>
           </div>
         </section>
 
-        {/* Form body */}
-        <section className="space-y-6 mb-12">
-          {/* Title & Tags */}
-          <div className="flex w-full gap-6">
+        {/* Form body - Adjusted padding for mobile */}
+        <section className="bg-card/40 backdrop-blur-sm border border-border/50 rounded-2xl md:rounded-[2.5rem] p-4 sm:p-8 md:p-10 shadow-sm space-y-6 md:space-y-10">
+
+          {/* Title & Tags - Stack on mobile, side-by-side on md+ */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <TextInput
-              label="Title"
-              placeholder="Your post title"
-              withAsterisk
-              className="w-2/4"
+              label={<span className="text-sm font-bold mb-1.5 block">Post Title <span className={'text-red-500'}>*</span></span>}
+              placeholder="Enter a catchy title..."
+              size="md"
               {...register("title", {
                 required: "Title is required",
                 validate: (value) =>
                   /^[a-zA-Z0-9][a-zA-Z0-9\s\-:;'""]*$/.test(value) ||
-                  "Title must start with a letter or number and can only contain letters, numbers, spaces, -, :, ;, ', \"",
+                  "Title must start with a letter or number",
               })}
               error={errors.title?.message?.toString()}
               classNames={{
-                input:
-                  "bg-card text-foreground border border-border placeholder:text-muted-foreground",
-                label: "text-primary",
+                input: "bg-background/80 rounded-xl md:rounded-full border-border/60 focus:border-primary h-[50px] px-5",
+                label: "ml-1"
               }}
             />
 
@@ -163,56 +157,54 @@ const AddPost = () => {
               rules={{ required: "Select at least one tag" }}
               render={({ field }) => (
                 <MultiSelect
-                  label="Tags"
-                  className="w-2/4"
+                  label={<span className="text-sm font-bold mb-1.5 block">Tags <span className={'text-red-500'}>*</span></span>}
                   placeholder="Choose up to 3"
                   data={tagOptions}
                   maxValues={3}
                   searchable
-                  withAsterisk
+                  size="md"
                   {...field}
                   error={errors.tagIds?.message?.toString()}
                   classNames={{
-                    input:
-                      "bg-card text-foreground border border-border placeholder:text-muted-foreground",
-                    label: "text-primary",
+                    input: "bg-background/80 rounded-xl md:rounded-2xl border-border/60 focus:border-primary min-h-[50px] px-3",
+                    label: "ml-1"
                   }}
                 />
               )}
             />
           </div>
 
-          {/* Content */}
-          <Input.Wrapper
-            id="content-editor"
-            label="Content"
-            withAsterisk
-            error={errors.content?.message?.toString()}
-            className="text-primary"
-          >
-            <Controller
-              name="content"
-              control={control}
-              rules={{ required: "Content is required" }}
-              render={({ field }) => (
-                <CustomEditor
-                  value={field.value}
-                  onChange={field.onChange}
-                  error={errors.content?.message}
-                />
-              )}
-            />
-          </Input.Wrapper>
+          {/* Content - Ensure editor doesn't break container */}
+          <div className="space-y-2">
+            <label className="text-sm font-bold ml-1 block w-fit">Content Details <span className="text-red-500">*</span></label>
+            <div className="rounded-2xl md:rounded-3xl overflow-hidden border border-border/60 bg-background/30 shadow-inner">
+              <Controller
+                name="content"
+                control={control}
+                rules={{ required: "Content is required" }}
+                render={({ field }) => (
+                  <CustomEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    // Ensure the editor has a min-height for mobile usage
+                  />
+                )}
+              />
+            </div>
+            {errors.content && (
+              <span className="text-red-500 text-xs mt-1 ml-1">{errors.content.message}</span>
+            )}
+          </div>
 
-          {/* Featured image */}
-          <div className="w-[25rem]">
+          {/* Featured image - Simplified layout */}
+          <div className="w-full lg:max-w-md pt-4">
             <CommonImageUpload
               control={control}
               name="image"
-              label="Featured Image"
+              label={<span className="text-sm font-bold mb-2 block">Featured Image <span className="text-red-500">*</span></span>}
               rules={{ required: "A featured image is required" }}
               errors={errors}
-              required={true}
+              required={false}
               onImageChange={handleImageChange}
             />
           </div>
