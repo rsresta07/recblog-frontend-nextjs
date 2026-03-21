@@ -122,32 +122,32 @@
 
     /* --- Typography Defaults --- */
     h1 {
-        @apply text-4xl font-extrabold tracking-tight lg:text-5xl mb-4 text-foreground;
+        @apply text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-4 text-foreground;
     }
     h2 {
-        @apply text-3xl font-semibold tracking-tight transition-colors first:mt-0 mb-4 text-foreground;
+        @apply text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight transition-colors first:mt-0 mb-4 text-foreground;
     }
     h3 {
-        @apply text-2xl font-semibold tracking-tight mb-3 text-foreground;
+        @apply text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight mb-3 text-foreground;
     }
     h4 {
-        @apply text-xl font-semibold tracking-tight mb-3 text-foreground;
+        @apply text-lg md:text-xl font-semibold tracking-tight mb-3 text-foreground;
     }
     h5 {
-        @apply text-lg font-semibold tracking-tight mb-2 text-foreground;
+        @apply text-base md:text-lg font-semibold tracking-tight mb-2 text-foreground;
     }
     h6 {
-        @apply text-base font-semibold tracking-tight mb-2 text-foreground;
+        @apply text-sm md:text-base font-semibold tracking-tight mb-2 text-foreground;
     }
     p {
-        @apply leading-7 [&:not(:first-child)]:mt-6 text-foreground/90;
+        @apply text-base md:text-lg leading-relaxed md:leading-7 [&:not(:first-child)]:mt-6 text-foreground/90;
     }
 
     /* --- Form Elements: Glassmorphism & Rounded Corners --- */
 
     /* Labels with a subtle glass effect */
     label {
-        @apply inline-block px-3 py-1.5 mb-1 text-sm font-medium leading-none
+        @apply inline-block px-3 py-1.5 md:px-4 md:py-2 mb-1.5 text-xs md:text-sm font-semibold leading-none
         rounded-full bg-background/30 backdrop-blur-md border border-border/40
         shadow-sm peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
     }
@@ -163,12 +163,14 @@
     input[type="date"],
     textarea,
     select {
-        @apply flex w-full px-4 py-2 text-sm text-foreground transition-all duration-200
-            /* Rounded property */
+        /*
+          text-base on mobile prevents iOS Safari auto-zoom
+          md:text-sm scales it back down for desktop.
+          py-3 gives a larger touch target for thumbs on mobile.
+        */
+        @apply flex w-full px-4 py-3 md:py-2 text-base md:text-sm text-foreground transition-all duration-200
         rounded-full
-            /* Glassmorphism properties using your theme variables */
         bg-background/20 backdrop-blur-md border border-border/50 shadow-sm
-            /* States */
         placeholder:text-muted-foreground
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background/50 focus-visible:bg-background/40
         disabled:cursor-not-allowed disabled:opacity-50;
@@ -176,6 +178,6 @@
 
     /* Special rule to keep textareas functioning properly with rounded-full */
     textarea {
-        @apply rounded-2xl min-h-[100px];
+        @apply rounded-3xl min-h-[120px];
     }
 }

@@ -64,7 +64,11 @@ const CommonForm = ({
             {footerLinkText}{" "}
             <Anchor
               component="button"
-              onClick={footerLinkAction}
+              type="button" // ✅ FIX 1: Explicitly tell HTML this is NOT a submit button
+              onClick={(e) => {
+                e.preventDefault(); // ✅ FIX 2: Stop the form from submitting
+                footerLinkAction();
+              }}
               className="font-semibold text-primary hover:text-accent transition-colors"
             >
               {footerLinkLabel}

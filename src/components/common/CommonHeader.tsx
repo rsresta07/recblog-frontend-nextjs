@@ -9,9 +9,9 @@ import { useAuth } from "@/utils/hooks/useAuth";
 import { useHotkeys } from "@mantine/hooks";
 import { Shortcut } from "@/utils/lib/Shortcut";
 import { Spotlight, spotlight, type SpotlightActionData } from "@mantine/spotlight";
-import { IconSearch, IconMenu2, IconX } from "@tabler/icons-react";
+import { IconSearch } from "@tabler/icons-react";
 import { ApiGetPost } from "@/api/blog";
-import { TextInput, ActionIcon } from "@mantine/core";
+import { TextInput } from "@mantine/core";
 
 export default function CommonHeader() {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
@@ -19,7 +19,6 @@ export default function CommonHeader() {
   const [actions, setActions] = useState<SpotlightActionData[]>([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -85,111 +84,69 @@ export default function CommonHeader() {
     else setActions([]);
   }, [searchQuery]);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [router.asPath]);
-
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm">
-      <section className="container mx-auto flex justify-between items-center py-3 px-4 md:px-8">
-        <CommonLogo />
+  <header className="hidden md:block sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm">
+    <section className="container mx-auto flex justify-between items-center py-3 px-8">
+      <CommonLogo />
 
-        {/* Mobile Actions */}
-        <div className="flex items-center gap-2 md:hidden">
-          <ActionIcon variant="light" color="primary" radius="xl" size="lg" onClick={() => spotlight.open()}>
-            <IconSearch size={20} stroke={1.5} />
-          </ActionIcon>
-          <ActionIcon variant="light" color="primary" radius="xl" size="lg" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <IconX size={20} /> : <IconMenu2 size={20} />}
-          </ActionIcon>
-        </div>
+      {/* Desktop Search */}
+      <div className="flex w-[20rem]">
+        <TextInput
+          placeholder="Search (Ctrl + K)"
+          readOnly
+          onClick={() => spotlight.open()}
+          leftSection={<IconSearch size={18} stroke={1.5} className="text-muted-foreground" />}
+          className="w-full"
+          classNames={{ input: 'bg-card/50 backdrop-blur-md border-border/50 cursor-pointer hover:border-primary/50 transition-colors' }}
+          radius="xl"
+        />
+      </div>
 
-        {/* Desktop Search */}
-        <div className="hidden md:flex w-[20rem]">
-          <TextInput
-            placeholder="Search (Ctrl + K)"
-            readOnly
-            onClick={() => spotlight.open()}
-            leftSection={<IconSearch size={18} stroke={1.5} className="text-muted-foreground" />}
-            className="w-full"
-            classNames={{ input: 'bg-card/50 backdrop-blur-md border-border/50 cursor-pointer hover:border-primary/50 transition-colors' }}
-            radius="xl"
-          />
-        </div>
+      <Spotlight
+        actions={actions}
+        searchProps={{
+          value: searchQuery,
+          onChange: (e) => setSearchQuery(e.currentTarget.value),
+          leftSection: <IconSearch size={20} stroke={1.5} />,
+          placeholder: "Type at least 3 characters to search…",
+        }}
+        highlightQuery
+        classNames={{ content: 'rounded-3xl', body: 'bg-background/90 backdrop-blur-xl border border-border/50' }}
+      >
+        <GlobalHotkeys />
+        <Shortcut symbol="K" description="Open Spotlight Search" />
+        <Shortcut symbol="X" description="Rickroll" />
+      </Spotlight>
 
-        <Spotlight
-          actions={actions}
-          searchProps={{
-            value: searchQuery,
-            onChange: (e) => setSearchQuery(e.currentTarget.value),
-            leftSection: <IconSearch size={20} stroke={1.5} />,
-            placeholder: "Type at least 3 characters to search…",
-          }}
-          highlightQuery
-          classNames={{ content: 'rounded-3xl', body: 'bg-background/90 backdrop-blur-xl border border-border/50' }}
-        >
-          <GlobalHotkeys />
-          <Shortcut symbol="K" description="Open Spotlight Search" />
-          <Shortcut symbol="X" description="Rickroll" />
-        </Spotlight>
-
-        {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-6 font-medium text-sm">
-          {user && (
+      {/* Desktop Nav */}
+      <nav className="flex items-center gap-6 font-medium text-sm">
+        {user && (
+          <>
+            <Link href={`/user/${user?.slug}/add-post`} className="text-foreground hover:text-primary transition-colors">Add Post</Link>
+            <Link href={`/recommendation`} className="text-foreground hover:text-primary transition-colors">For You</Link>
+          </>
+        )}
+        {headerData?.options?.map((item: any) => (
+          <Link key={item.id} href={item?.link} className="text-foreground hover:text-primary transition-colors">
+            {item?.title}
+          </Link>
+        ))}
+        <div className="flex items-center gap-4 ml-2 border-l border-border/50 pl-6">
+          {user ? (
             <>
-              <Link href={`/user/${user?.slug}/add-post`} className="text-foreground hover:text-primary transition-colors">Add Post</Link>
-              <Link href={`/recommendation`} className="text-foreground hover:text-primary transition-colors">For You</Link>
+              <Link href={user.role === "SUPER_ADMIN" ? `/dashboard/${user?.slug}` : `/user/${user?.slug}`} className="text-primary hover:text-primary/80 transition-colors">Profile</Link>
+              <button onClick={logout} className="px-4 py-2 bg-destructive/10 text-destructive rounded-full hover:bg-destructive hover:text-white transition-colors">Logout</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setShowLoginModal(true)} className="px-5 py-2 bg-primary text-primary-foreground rounded-full shadow-sm hover:opacity-90 transition-opacity">Sign In</button>
+              <LoginModal triggerOpen={showLoginModal} setTriggerOpen={setShowLoginModal} openRegisterModal={openRegisterModal} />
+              <RegisterModal openLoginModal={() => setShowLoginModal(true)} />
             </>
           )}
-          {headerData?.options?.map((item: any) => (
-            <Link key={item.id} href={item?.link} className="text-foreground hover:text-primary transition-colors">
-              {item?.title}
-            </Link>
-          ))}
-          <div className="flex items-center gap-4 ml-2 border-l border-border/50 pl-6">
-            {user ? (
-              <>
-                <Link href={user.role === "SUPER_ADMIN" ? `/dashboard/${user?.slug}` : `/user/${user?.slug}`} className="text-primary hover:text-primary/80 transition-colors">Profile</Link>
-                <button onClick={logout} className="px-4 py-2 bg-destructive/10 text-destructive rounded-full hover:bg-destructive hover:text-white transition-colors">Logout</button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => setShowLoginModal(true)} className="px-5 py-2 bg-primary text-primary-foreground rounded-full shadow-sm hover:opacity-90 transition-opacity">Sign In</button>
-                <LoginModal triggerOpen={showLoginModal} setTriggerOpen={setShowLoginModal} openRegisterModal={openRegisterModal} />
-                <RegisterModal openLoginModal={() => setShowLoginModal(true)} />
-              </>
-            )}
-          </div>
-        </nav>
-      </section>
-
-      {/* Mobile Menu Dropdown */}
-      {mobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-xl border-b border-border/50 py-4 px-6 flex flex-col gap-4 shadow-lg animate-in slide-in-from-top-2">
-          {user && (
-            <>
-              <Link href={`/user/${user?.slug}/add-post`} className="text-foreground font-medium py-2">Add Post</Link>
-              <Link href={`/recommendation`} className="text-foreground font-medium py-2">For You</Link>
-            </>
-          )}
-          {headerData?.options?.map((item: any) => (
-            <Link key={item.id} href={item?.link} className="text-foreground font-medium py-2 border-t border-border/30">
-              {item?.title}
-            </Link>
-          ))}
-          <div className="flex flex-col gap-3 mt-2 border-t border-border/50 pt-4">
-            {user ? (
-              <>
-                <Link href={user.role === "SUPER_ADMIN" ? `/dashboard/${user?.slug}` : `/user/${user?.slug}`} className="w-full text-center px-4 py-2 bg-primary/10 text-primary rounded-full font-semibold">Profile</Link>
-                <button onClick={logout} className="w-full px-4 py-2 bg-destructive/10 text-destructive rounded-full font-semibold">Logout</button>
-              </>
-            ) : (
-              <button onClick={() => setShowLoginModal(true)} className="w-full px-4 py-3 bg-primary text-primary-foreground rounded-full font-semibold">Sign In</button>
-            )}
-          </div>
         </div>
-      )}
-    </header>
-  );
+      </nav>
+    </section>
+  </header>
+);
 }
