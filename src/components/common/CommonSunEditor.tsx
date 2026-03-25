@@ -1,4 +1,5 @@
 import React, { FC, useRef, useEffect, useState } from "react";
+import { ApiMagicFix } from "@/api/magic-fix";
 
 interface CustomEditorProps {
   value: string;
@@ -8,7 +9,6 @@ interface CustomEditorProps {
 
 const CustomEditor: FC<CustomEditorProps> = ({ value, onChange, error }) => {
   const editableRef = useRef<HTMLDivElement>(null);
-  // ... (keep all your existing useState and command logic exact same)
   const [boldActive, setBoldActive] = useState(false);
   const [italicActive, setItalicActive] = useState(false);
   const [underlineActive, setUnderlineActive] = useState(false);
@@ -18,13 +18,17 @@ const CustomEditor: FC<CustomEditorProps> = ({ value, onChange, error }) => {
   const [linkActive, setLinkActive] = useState(false);
   const [currentHeading, setCurrentHeading] = useState("p");
 
+  // --- NEW AI STATES ---
+  const [isFixing, setIsFixing] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState("");
+
   useEffect(() => {
     const editor = editableRef.current;
-    if (editor && editor.innerHTML !== value) {
+    if (editor && editor.innerHTML !== value && !isFixing) {
       editor.innerHTML = value || "<div><br></div>";
       updateToolbar();
     }
-  }, [value]);
+  }, [value, isFixing]);
 
   const execCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -56,6 +60,40 @@ const CustomEditor: FC<CustomEditorProps> = ({ value, onChange, error }) => {
       if (node && node.nodeName === "A") return (node as HTMLAnchorElement).href;
     }
     return "";
+  };
+
+  // --- AI FUNCTION ---
+  // --- AI FUNCTION ---
+  const handleMagicFix = async () => {
+    const editor = editableRef.current;
+    if (!editor) return;
+
+    const currentHtml = editor.innerHTML;
+    // Don't call API if editor is empty
+    if (!currentHtml || currentHtml === "<div><br></div>") return;
+
+    setIsFixing(true);
+    setAiFeedback("✨ Polishing your text...");
+
+    try {
+      const response = await ApiMagicFix({
+        text: currentHtml,
+        instruction: "Fix grammar, spelling, and flow. MUST preserve all existing HTML tags and formatting."
+      });
+
+      // ✅ FIX: Access the nested 'data' object
+      if (response && response.data && response.data.editedText) {
+        editor.innerHTML = response.data.editedText;
+        triggerChange(); // Updates the form state
+        setAiFeedback(`${response.data.explanation || "Text improved!"}`);
+      }
+    } catch (error) {
+      console.error("Magic Fix failed:", error);
+      setAiFeedback("Failed to apply Magic Fix.");
+    } finally {
+      setIsFixing(false);
+      setTimeout(() => setAiFeedback(""), 4000);
+    }
   };
 
   const btnBase = "text-xs font-semibold px-3 py-1.5 rounded-full transition-colors duration-200 border border-border/40 hover:bg-primary/10";
@@ -112,14 +150,36 @@ const CustomEditor: FC<CustomEditorProps> = ({ value, onChange, error }) => {
         <div className="flex gap-1 ml-auto">
           <button type="button" onClick={() => execCommand("undo")} className={btnBase}>Undo</button>
           <button type="button" onClick={() => execCommand("redo")} className={btnBase}>Redo</button>
+
+          {/* --- NEW AI BUTTON --- */}
+          <button
+            type="button"
+            onClick={handleMagicFix}
+            disabled={isFixing}
+            className={`text-xs font-semibold px-4 py-1.5 rounded-full transition-colors duration-200 border border-purple-500/40 bg-purple-500/10 text-purple-600 hover:bg-purple-500 hover:text-white flex items-center gap-1 ${isFixing ? "opacity-50 cursor-not-allowed" : ""}`}
+          >
+            {isFixing ? (
+              <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+            ) : "✨ Magic Fix"}
+          </button>
         </div>
       </div>
+
+      {/* --- AI FEEDBACK TEXT --- */}
+      {aiFeedback && (
+        <div className="text-xs text-purple-600 font-medium px-2 animate-pulse">
+          {aiFeedback}
+        </div>
+      )}
 
       {/* Editable Area */}
       <div
         ref={editableRef}
         className="se-editable p-5 rounded-3xl bg-background/20 backdrop-blur-md text-foreground min-h-[250px] border border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
-        contentEditable
+        contentEditable={!isFixing} // Disable typing while AI is fixing
         suppressContentEditableWarning
         onInput={handleInput}
         onFocus={updateToolbar}
