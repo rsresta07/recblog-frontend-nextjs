@@ -68,8 +68,24 @@ const AddPost = () => {
       setUploadedImageUrl(null);
       router.push(`/user/${slug}`);
     } catch (e: any) {
-      console.error(e);
-      showNotify("error", "Failed to add post.");
+      console.error("Submission error:", e);
+
+      // Safely extract the error message from the backend response
+      // (This handles standard Axios formats and fallback JS errors)
+      const errorMessage =
+        e?.response?.data?.message ||
+        e?.message || e ||
+        "Failed to add post. Please try again.";
+
+      // If the backend threw a 403 (Forbidden), it's our moderation gatekeeper
+      if (e?.response?.status === 403) {
+        // Show as a warning so the user knows they just need to fix their content
+        showNotify("warning", errorMessage);
+      } else {
+        // Show as a standard error for 500s or network failures
+        showNotify("error", errorMessage);
+      }
+
     } finally {
       setLoading(false);
     }
